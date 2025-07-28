@@ -1,27 +1,36 @@
-// Example model schema from the Drizzle docs
-// https://orm.drizzle.team/docs/sql-schema-declaration
+import {
+	pgTable,
+	text,
+	timestamp,
+	decimal,
+	pgEnum,
+	uuid,
+} from "drizzle-orm/pg-core";
+import { z } from "zod";
 
-import { sql } from "drizzle-orm";
-import { index, pgTableCreator } from "drizzle-orm/pg-core";
+export const accountTypeEnum = pgEnum("account_type", [
+	"checking",
+	"savings",
+	"credit",
+	"investment",
+	"loan",
+	"other",
+]);
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
-export const createTable = pgTableCreator((name) => `herrro_${name}`);
-
-export const posts = createTable(
-	"post",
-	(d) => ({
-		id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-		name: d.varchar({ length: 256 }),
-		createdAt: d
-			.timestamp({ withTimezone: true })
-			.default(sql`CURRENT_TIMESTAMP`)
-			.notNull(),
-		updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-	}),
-	(t) => [index("name_idx").on(t.name)],
-);
+export const accounts = pgTable("accounts", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	userId: text("user_id").notNull(),
+	name: text("name").notNull(),
+	type: accountTypeEnum("type").notNull(),
+	currency: text("currency").notNull().default("USD"),
+	balance: decimal("balance", { precision: 19, scale: 4 })
+		.notNull()
+		.default("0"),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	archivedAt: timestamp("archived_at", { withTimezone: true }),
+});
