@@ -1,7 +1,7 @@
 "use client";
 
+import { Landmark, LayoutDashboard, PiggyBank, Receipt, Settings } from "lucide-react";
 import type * as React from "react";
-import { LayoutDashboard, Receipt, Settings, PiggyBank, Landmark } from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
 import { NavSecondary } from "@/components/ui/nav-secondary";
@@ -99,8 +99,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="/dashboard">
-                <PiggyBank className="!size-5" />
-                <span className="font-semibold text-base">FinShark</span>
+                <span className="font-semibold text-base">Herrro</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

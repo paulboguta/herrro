@@ -34,17 +34,17 @@ function DynamicBreadcrumb({ breadcrumbs }: { breadcrumbs: IBreadcrumbItem[] }) 
               return (
                 <BreadcrumbItem key={index}>
                   {isLast ? (
-                    <BreadcrumbPage className="font-medium text-base">{item.label}</BreadcrumbPage>
+                    <BreadcrumbPage className="font-medium text-sm">{item.label}</BreadcrumbPage>
                   ) : (
                     <>
                       {item.href ? (
                         <BreadcrumbLink asChild>
-                          <Link href={item.href} className="font-medium text-base">
+                          <Link href={item.href} className="font-medium text-sm">
                             {item.label}
                           </Link>
                         </BreadcrumbLink>
                       ) : (
-                        <span className="font-medium text-base text-muted-foreground">{item.label}</span>
+                        <span className="font-medium text-smtext-muted-foreground">{item.label}</span>
                       )}
                       <BreadcrumbSeparator>
                         <ChevronRight className="h-4 w-4" />
@@ -57,7 +57,7 @@ function DynamicBreadcrumb({ breadcrumbs }: { breadcrumbs: IBreadcrumbItem[] }) 
           </BreadcrumbList>
         </Breadcrumb>
       ) : (
-        <h1 className="font-medium text-base">Dashboard</h1>
+        <h1 className="font-medium text-sm">Dashboard</h1>
       )}
     </>
   );
