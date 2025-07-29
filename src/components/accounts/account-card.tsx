@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -18,15 +19,19 @@ interface AccountCardProps {
 
 export function AccountCard({ account }: AccountCardProps) {
 	const utils = api.useUtils();
+	const prefetchTimeoutRef = useRef<NodeJS.Timeout>();
 
-	// Prefetch account details on hover
+	// Debounced lightweight prefetch - only account details
 	const handleMouseEnter = () => {
-		void utils.account.getById.prefetch({ id: account.id });
-		void utils.transaction.getByAccount.prefetch({
-			accountId: account.id,
-			limit: 50,
-			offset: 0,
-		});
+		// Clear any existing timeout
+		if (prefetchTimeoutRef.current) {
+			clearTimeout(prefetchTimeoutRef.current);
+		}
+		
+		// Debounce prefetch by 200ms
+		prefetchTimeoutRef.current = setTimeout(() => {
+			void utils.account.getById.prefetch({ id: account.id });
+		}, 200);
 	};
 
 	return (
