@@ -8,6 +8,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import type { RouterOutputs } from "@/trpc/react";
+import { api } from "@/trpc/react";
 
 type Account = RouterOutputs["account"]["getAll"][0];
 
@@ -16,9 +17,24 @@ interface AccountCardProps {
 }
 
 export function AccountCard({ account }: AccountCardProps) {
+	const utils = api.useUtils();
+
+	// Prefetch account details on hover
+	const handleMouseEnter = () => {
+		void utils.account.getById.prefetch({ id: account.id });
+		void utils.transaction.getByAccount.prefetch({
+			accountId: account.id,
+			limit: 50,
+			offset: 0,
+		});
+	};
+
 	return (
 		<Link href={`/accounts/${account.id}`}>
-			<Card className="cursor-pointer transition-colors hover:bg-muted/50">
+			<Card 
+				className="cursor-pointer transition-colors hover:bg-muted/50"
+				onMouseEnter={handleMouseEnter}
+			>
 				<CardHeader className="pb-3">
 					<div className="flex items-center justify-between">
 						<CardTitle className="text-lg">{account.name}</CardTitle>

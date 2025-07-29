@@ -1,7 +1,8 @@
 "use client";
 
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchStreamLink, loggerLink } from "@trpc/client";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { useState, useEffect } from "react";
@@ -50,7 +51,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 						process.env.NODE_ENV === "development" ||
 						(op.direction === "down" && op.result instanceof Error),
 				}),
-				httpBatchStreamLink({
+				httpBatchLink({
 					transformer: SuperJSON,
 					url: `${getBaseUrl()}/api/trpc`,
 					headers: () => {
@@ -63,16 +64,17 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 		}),
 	);
 
-	// Configure background refetch strategies
-	useEffect(() => {
-		configureBackgroundRefetch(queryClient);
-	}, [queryClient]);
+	// Configure background refetch strategies - disabled for performance
+	// useEffect(() => {
+	// 	configureBackgroundRefetch(queryClient);
+	// }, [queryClient]);
 
 	return (
 		<QueryClientProvider client={queryClient}>
 			<api.Provider client={trpcClient} queryClient={queryClient}>
 				{props.children}
 			</api.Provider>
+			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	);
 }

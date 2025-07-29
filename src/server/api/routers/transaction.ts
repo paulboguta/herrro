@@ -1,11 +1,11 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { transactions, accounts } from "@/server/db/schema";
-import { 
-	createTransactionSchema, 
-	updateTransactionSchema, 
+import {
+	createTransactionSchema,
+	updateTransactionSchema,
 	getTransactionSchema,
 	getTransactionsByAccountSchema,
-	getAllTransactionsSchema 
+	getAllTransactionsSchema,
 } from "@/server/api/schemas/transaction";
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -19,7 +19,7 @@ export const transactionRouter = createTRPCRouter({
 			const account = await ctx.db.query.accounts.findFirst({
 				where: and(
 					eq(accounts.id, input.accountId),
-					eq(accounts.userId, ctx.user.id)
+					eq(accounts.userId, ctx.user.id),
 				),
 			});
 
@@ -55,26 +55,30 @@ export const transactionRouter = createTRPCRouter({
 						}
 
 						// Calculate new balance and running balance
-						const amountChange = input.type === "income" 
-							? input.amount 
-							: `-${input.amount}`;
-						
-						const newBalance = parseFloat(currentAccount.balance) + parseFloat(amountChange);
+						const amountChange =
+							input.type === "income" ? input.amount : `-${input.amount}`;
+
+						const newBalance =
+							Number.parseFloat(currentAccount.balance) +
+							Number.parseFloat(amountChange);
 						const runningBalance = newBalance.toFixed(4);
 
 						// Create the transaction with running balance
-						const [transaction] = await tx.insert(transactions).values({
-							userId: ctx.user.id,
-							accountId: input.accountId,
-							amount: input.amount,
-							type: input.type,
-							status: input.status,
-							category: input.category,
-							currency: input.currency,
-							description: input.description,
-							date: input.date,
-							runningBalance: runningBalance,
-						}).returning();
+						const [transaction] = await tx
+							.insert(transactions)
+							.values({
+								userId: ctx.user.id,
+								accountId: input.accountId,
+								amount: input.amount,
+								type: input.type,
+								status: input.status,
+								category: input.category,
+								currency: input.currency,
+								description: input.description,
+								date: input.date,
+								runningBalance: runningBalance,
+							})
+							.returning();
 
 						// Update account balance with optimistic locking
 						const updateResult = await tx
@@ -84,10 +88,12 @@ export const transactionRouter = createTRPCRouter({
 								balanceVersion: currentAccount.balanceVersion + 1,
 								updatedAt: new Date(),
 							})
-							.where(and(
-								eq(accounts.id, input.accountId),
-								eq(accounts.balanceVersion, currentAccount.balanceVersion)
-							))
+							.where(
+								and(
+									eq(accounts.id, input.accountId),
+									eq(accounts.balanceVersion, currentAccount.balanceVersion),
+								),
+							)
 							.returning();
 
 						// Check if the optimistic lock succeeded
@@ -105,10 +111,15 @@ export const transactionRouter = createTRPCRouter({
 						};
 					});
 				} catch (error) {
-					if ((error as TRPCError).code === "CONFLICT" && retryCount < maxRetries - 1) {
+					if (
+						(error as TRPCError).code === "CONFLICT" &&
+						retryCount < maxRetries - 1
+					) {
 						retryCount++;
 						// Small delay before retry to reduce contention
-						await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
+						await new Promise((resolve) =>
+							setTimeout(resolve, Math.random() * 100),
+						);
 						continue;
 					}
 					throw error;
@@ -125,8 +136,11 @@ export const transactionRouter = createTRPCRouter({
 		.input(getAllTransactionsSchema)
 		.query(async ({ ctx, input }) => {
 			// Add cache headers for Edge caching
-			ctx.resHeaders?.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
-			
+			ctx.resHeaders?.set(
+				"Cache-Control",
+				"private, max-age=30, stale-while-revalidate=60",
+			);
+
 			const result = await ctx.db.query.transactions.findMany({
 				where: eq(transactions.userId, ctx.user.id),
 				orderBy: [desc(transactions.date), desc(transactions.createdAt)],
@@ -142,14 +156,14 @@ export const transactionRouter = createTRPCRouter({
 					},
 				},
 			});
-			
+
 			// Return count for pagination
 			const totalCount = await ctx.db
 				.select({ count: sql<number>`count(*)` })
 				.from(transactions)
 				.where(eq(transactions.userId, ctx.user.id))
-				.then(res => res[0]?.count ?? 0);
-			
+				.then((res) => res[0]?.count ?? 0);
+
 			return {
 				items: result,
 				totalCount,
@@ -161,13 +175,16 @@ export const transactionRouter = createTRPCRouter({
 		.input(getTransactionsByAccountSchema)
 		.query(async ({ ctx, input }) => {
 			// Add cache headers for Edge caching
-			ctx.resHeaders?.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
-			
+			ctx.resHeaders?.set(
+				"Cache-Control",
+				"private, max-age=30, stale-while-revalidate=60",
+			);
+
 			// Verify the account belongs to the user
 			const account = await ctx.db.query.accounts.findFirst({
 				where: and(
 					eq(accounts.id, input.accountId),
-					eq(accounts.userId, ctx.user.id)
+					eq(accounts.userId, ctx.user.id),
 				),
 			});
 
@@ -181,23 +198,25 @@ export const transactionRouter = createTRPCRouter({
 			const result = await ctx.db.query.transactions.findMany({
 				where: and(
 					eq(transactions.userId, ctx.user.id),
-					eq(transactions.accountId, input.accountId)
+					eq(transactions.accountId, input.accountId),
 				),
 				orderBy: [desc(transactions.date), desc(transactions.createdAt)],
 				limit: input.limit || 50,
 				offset: input.offset || 0,
 			});
-			
+
 			// Return count for pagination
 			const totalCount = await ctx.db
 				.select({ count: sql<number>`count(*)` })
 				.from(transactions)
-				.where(and(
-					eq(transactions.userId, ctx.user.id),
-					eq(transactions.accountId, input.accountId)
-				))
-				.then(res => res[0]?.count ?? 0);
-			
+				.where(
+					and(
+						eq(transactions.userId, ctx.user.id),
+						eq(transactions.accountId, input.accountId),
+					),
+				)
+				.then((res) => res[0]?.count ?? 0);
+
 			return {
 				items: result,
 				totalCount,
@@ -212,7 +231,7 @@ export const transactionRouter = createTRPCRouter({
 			const transaction = await ctx.db.query.transactions.findFirst({
 				where: and(
 					eq(transactions.id, input.id),
-					eq(transactions.userId, ctx.user.id)
+					eq(transactions.userId, ctx.user.id),
 				),
 			});
 
@@ -248,16 +267,17 @@ export const transactionRouter = createTRPCRouter({
 						}
 
 						// Delete the transaction first
-						await tx
-							.delete(transactions)
-							.where(eq(transactions.id, input.id));
+						await tx.delete(transactions).where(eq(transactions.id, input.id));
 
 						// Calculate balance change (reverse the transaction)
-						const amountChange = transaction.type === "income" 
-							? `-${transaction.amount}` 
-							: transaction.amount;
-						
-						const newBalance = parseFloat(currentAccount.balance) + parseFloat(amountChange);
+						const amountChange =
+							transaction.type === "income"
+								? `-${transaction.amount}`
+								: transaction.amount;
+
+						const newBalance =
+							Number.parseFloat(currentAccount.balance) +
+							Number.parseFloat(amountChange);
 						const balanceStr = newBalance.toFixed(4);
 
 						// Update account balance with optimistic locking
@@ -268,10 +288,12 @@ export const transactionRouter = createTRPCRouter({
 								balanceVersion: currentAccount.balanceVersion + 1,
 								updatedAt: new Date(),
 							})
-							.where(and(
-								eq(accounts.id, transaction.accountId),
-								eq(accounts.balanceVersion, currentAccount.balanceVersion)
-							))
+							.where(
+								and(
+									eq(accounts.id, transaction.accountId),
+									eq(accounts.balanceVersion, currentAccount.balanceVersion),
+								),
+							)
 							.returning();
 
 						// Check if the optimistic lock succeeded
@@ -281,7 +303,7 @@ export const transactionRouter = createTRPCRouter({
 								message: "Account was modified by another transaction",
 							});
 						}
-						
+
 						return {
 							success: true,
 							updatedBalance: updateResult[0].balance,
@@ -289,10 +311,15 @@ export const transactionRouter = createTRPCRouter({
 						};
 					});
 				} catch (error) {
-					if ((error as TRPCError).code === "CONFLICT" && retryCount < maxRetries - 1) {
+					if (
+						(error as TRPCError).code === "CONFLICT" &&
+						retryCount < maxRetries - 1
+					) {
 						retryCount++;
 						// Small delay before retry to reduce contention
-						await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
+						await new Promise((resolve) =>
+							setTimeout(resolve, Math.random() * 100),
+						);
 						continue;
 					}
 					throw error;
@@ -304,28 +331,33 @@ export const transactionRouter = createTRPCRouter({
 				message: "Failed to delete transaction after multiple retries",
 			});
 		}),
-	
+
 	// Get transactions for a date range (useful for reports)
 	getByDateRange: protectedProcedure
-		.input(z.object({
-			startDate: z.string().datetime(),
-			endDate: z.string().datetime(),
-			accountId: z.string().optional(),
-		}))
+		.input(
+			z.object({
+				startDate: z.string().datetime(),
+				endDate: z.string().datetime(),
+				accountId: z.string().optional(),
+			}),
+		)
 		.query(async ({ ctx, input }) => {
 			// Add cache headers for Edge caching
-			ctx.resHeaders?.set("Cache-Control", "private, max-age=300, stale-while-revalidate=600");
-			
+			ctx.resHeaders?.set(
+				"Cache-Control",
+				"private, max-age=300, stale-while-revalidate=600",
+			);
+
 			const conditions = [
 				eq(transactions.userId, ctx.user.id),
 				gte(transactions.date, input.startDate),
 				lte(transactions.date, input.endDate),
 			];
-			
+
 			if (input.accountId) {
 				conditions.push(eq(transactions.accountId, input.accountId));
 			}
-			
+
 			return await ctx.db.query.transactions.findMany({
 				where: and(...conditions),
 				orderBy: [desc(transactions.date), desc(transactions.createdAt)],
@@ -340,24 +372,29 @@ export const transactionRouter = createTRPCRouter({
 				},
 			});
 		}),
-		
+
 	// Infinite query for better pagination performance
 	getInfinite: protectedProcedure
-		.input(z.object({
-			limit: z.number().min(1).max(100).default(50),
-			cursor: z.number().optional(), // Offset-based cursor
-			accountId: z.string().optional(),
-		}))
+		.input(
+			z.object({
+				limit: z.number().min(1).max(100).default(50),
+				cursor: z.number().optional(), // Offset-based cursor
+				accountId: z.string().optional(),
+			}),
+		)
 		.query(async ({ ctx, input }) => {
 			// Add cache headers for Edge caching
-			ctx.resHeaders?.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
-			
+			ctx.resHeaders?.set(
+				"Cache-Control",
+				"private, max-age=30, stale-while-revalidate=60",
+			);
+
 			const conditions = [eq(transactions.userId, ctx.user.id)];
-			
+
 			if (input.accountId) {
 				conditions.push(eq(transactions.accountId, input.accountId));
 			}
-			
+
 			const items = await ctx.db.query.transactions.findMany({
 				where: and(...conditions),
 				orderBy: [desc(transactions.date), desc(transactions.createdAt)],
@@ -373,14 +410,14 @@ export const transactionRouter = createTRPCRouter({
 					},
 				},
 			});
-			
+
 			let nextCursor: number | undefined = undefined;
 			if (items.length > input.limit) {
 				// Remove the extra item
 				items.pop();
 				nextCursor = (input.cursor || 0) + input.limit;
 			}
-			
+
 			return {
 				items,
 				nextCursor,

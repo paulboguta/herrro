@@ -1,15 +1,36 @@
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { TransactionsList } from "@/components/transactions/transactions-list";
 import { SiteHeader } from "@/components/ui/site-header";
+import { api, HydrateClient } from "@/trpc/server";
+import { Suspense } from "react";
 
-export default function TransactionsPage() {
-	const breadcrumbs = [
-		{ label: "Transactions" }
-	];
+function TransactionSkeleton() {
+	return (
+		<div className="space-y-3">
+			{Array.from({ length: 5 }).map((_, i) => (
+				<div
+					key={i}
+					className="flex items-center justify-between rounded-lg border p-4"
+				>
+					<div className="space-y-1">
+						<div className="h-4 w-32 animate-pulse rounded bg-muted" />
+						<div className="h-3 w-24 animate-pulse rounded bg-muted" />
+					</div>
+					<div className="h-6 w-16 animate-pulse rounded bg-muted" />
+				</div>
+			))}
+		</div>
+	);
+}
+
+export default async function TransactionsPage() {
+	void api.transaction.getInfinite.prefetch({ limit: 50 });
+
+	const breadcrumbs = [{ label: "Transactions" }];
 
 	return (
-		<>
-			<SiteHeader 
+		<HydrateClient>
+			<SiteHeader
 				breadcrumbs={breadcrumbs}
 				actions={<CreateTransactionForm />}
 			/>
@@ -25,11 +46,13 @@ export default function TransactionsPage() {
 							</div>
 						</div>
 						<div className="px-4 lg:px-6">
-							<TransactionsList />
+							<Suspense fallback={<TransactionSkeleton />}>
+								<TransactionsList />
+							</Suspense>
 						</div>
 					</div>
 				</div>
 			</div>
-		</>
+		</HydrateClient>
 	);
 }

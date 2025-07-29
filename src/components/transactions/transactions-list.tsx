@@ -18,83 +18,51 @@ function TransactionSkeleton() {
 	return (
 		<div className="space-y-3">
 			{Array.from({ length: 5 }).map((_, i) => (
-				<div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+				<div
+					key={i}
+					className="flex items-center justify-between rounded-lg border p-4"
+				>
 					<div className="space-y-1">
-						<div className="h-4 bg-muted animate-pulse rounded w-32" />
-						<div className="h-3 bg-muted animate-pulse rounded w-24" />
+						<div className="h-4 w-32 animate-pulse rounded bg-muted" />
+						<div className="h-3 w-24 animate-pulse rounded bg-muted" />
 					</div>
-					<div className="h-6 bg-muted animate-pulse rounded w-16" />
+					<div className="h-6 w-16 animate-pulse rounded bg-muted" />
 				</div>
 			))}
 		</div>
 	);
 }
 
-export function TransactionsList({ accountId, limit = 50 }: TransactionsListProps) {
-	// Use infinite query for better pagination performance
-	const {
-		data,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-		isLoading,
-		error,
-	} = api.transaction.getInfinite.useInfiniteQuery(
-		{
-			limit,
-			accountId,
-		},
-		{
-			getNextPageParam: (lastPage) => {
-				return lastPage.nextCursor;
+export function TransactionsList({
+	accountId,
+	limit = 50,
+}: TransactionsListProps) {
+	const [data, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
+		api.transaction.getInfinite.useSuspenseInfiniteQuery(
+			{ limit, accountId },
+			{
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+				staleTime: 5 * 60 * 1000, // 5 minutes
+				refetchOnWindowFocus: false,
+				refetchOnMount: false,
 			},
-			// Optimize caching for transaction data
-			staleTime: 2 * 60 * 1000, // 2 minutes
-			cacheTime: 10 * 60 * 1000, // 10 minutes
-			// Keep previous data while fetching new data
-			keepPreviousData: true,
-			// Refetch when window gains focus if data is stale
-			refetchOnWindowFocus: "always",
-			// Enable background refetch
-			refetchOnMount: false,
-		}
-	);
+		);
 
 	// Flatten the paginated data
 	const transactions = useMemo(() => {
-		return data?.pages.flatMap(page => page.items) ?? [];
+		return data.pages.flatMap((page) => page.items);
 	}, [data]);
-
-	if (error) {
-		return (
-			<Card>
-				<CardContent className="flex items-center justify-center h-64">
-					<div className="text-center">
-						<h3 className="font-semibold text-lg text-destructive mb-2">
-							Error loading transactions
-						</h3>
-						<p className="text-muted-foreground">{error.message}</p>
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
-
-	if (isLoading) {
-		return <TransactionSkeleton />;
-	}
 
 	if (transactions.length === 0) {
 		return (
 			<Card>
-				<CardContent className="flex items-center justify-center h-64">
+				<CardContent className="flex h-64 items-center justify-center">
 					<div className="text-center">
-						<h3 className="font-semibold text-lg mb-2">No transactions yet</h3>
+						<h3 className="mb-2 font-semibold text-lg">No transactions yet</h3>
 						<p className="text-muted-foreground">
-							{accountId 
-								? "No transactions found for this account" 
-								: "Start by adding your first transaction"
-							}
+							{accountId
+								? "No transactions found for this account"
+								: "Start by adding your first transaction"}
 						</p>
 					</div>
 				</CardContent>
@@ -106,14 +74,19 @@ export function TransactionsList({ accountId, limit = 50 }: TransactionsListProp
 		<div className="space-y-4">
 			<div className="space-y-3">
 				{transactions.map((transaction) => (
-					<Card key={transaction.id} className="transition-colors hover:bg-muted/50">
+					<Card
+						key={transaction.id}
+						className="transition-colors hover:bg-muted/50"
+					>
 						<CardContent className="flex items-center justify-between p-4">
 							<div className="flex items-center space-x-4">
-								<div className={`p-2 rounded-full ${
-									transaction.type === "income" 
-										? "bg-green-100 text-green-600" 
-										: "bg-red-100 text-red-600"
-								}`}>
+								<div
+									className={`rounded-full p-2 ${
+										transaction.type === "income"
+											? "bg-green-100 text-green-600"
+											: "bg-red-100 text-red-600"
+									}`}
+								>
 									{transaction.type === "income" ? (
 										<ArrowUpRight className="h-4 w-4" />
 									) : (
@@ -122,8 +95,10 @@ export function TransactionsList({ accountId, limit = 50 }: TransactionsListProp
 								</div>
 								<div>
 									<p className="font-medium">{transaction.description}</p>
-									<div className="flex items-center space-x-2 text-sm text-muted-foreground">
-										<span>{new Date(transaction.date).toLocaleDateString()}</span>
+									<div className="flex items-center space-x-2 text-muted-foreground text-sm">
+										<span>
+											{new Date(transaction.date).toLocaleDateString()}
+										</span>
 										{transaction.account && (
 											<>
 												<span>•</span>
@@ -134,18 +109,24 @@ export function TransactionsList({ accountId, limit = 50 }: TransactionsListProp
 								</div>
 							</div>
 							<div className="text-right">
-								<p className={`font-semibold ${
-									transaction.type === "income" 
-										? "text-green-600" 
-										: "text-red-600"
-								}`}>
+								<p
+									className={`font-semibold ${
+										transaction.type === "income"
+											? "text-green-600"
+											: "text-red-600"
+									}`}
+								>
 									{transaction.type === "income" ? "+" : "-"}
 									{formatCurrency(
-										transaction.amount, 
-										transaction.currency || "USD"
+										transaction.amount,
+										transaction.currency || "USD",
 									)}
 								</p>
-								<Badge variant={transaction.type === "income" ? "default" : "secondary"}>
+								<Badge
+									variant={
+										transaction.type === "income" ? "default" : "secondary"
+									}
+								>
 									{transaction.type}
 								</Badge>
 							</div>

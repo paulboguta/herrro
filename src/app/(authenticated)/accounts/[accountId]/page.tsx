@@ -15,38 +15,17 @@ interface AccountDetailPageProps {
 export default async function AccountDetailPage({ params }: AccountDetailPageProps) {
 	const { accountId } = await params;
 
-	console.log("🔍 Account detail page - accountId:", accountId);
-
-	// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-	let account;
-	try {
-		console.log("📡 Attempting to fetch account data...");
-		
-		// Prefetch account data and recent transactions
-		await Promise.all([
-			api.account.getById.prefetch({ id: accountId }),
-			api.transaction.getByAccount.prefetch({ 
-				accountId: accountId, 
-				limit: 50,
-				offset: 0 
-			}),
-		]);
-		
-		console.log("✅ Prefetch completed, using server-side caller...");
-		
-		// Use server-side caller directly - the api is already a caller on server side
-		account = await api.account.getById({ id: accountId });
-		
-		console.log("✅ Account fetched successfully:", account?.name);
-	} catch (error) {
-		console.error("❌ Error fetching account:", error);
-		// If account doesn't exist or user doesn't have access, show 404
-		notFound();
-	}
+	// Non-blocking prefetch for instant page render
+	void api.account.getById.prefetch({ id: accountId });
+	void api.transaction.getByAccount.prefetch({ 
+		accountId, 
+		limit: 50,
+		offset: 0 
+	});
 
 	const breadcrumbs = [
 		{ label: "Accounts", href: "/accounts" },
-		{ label: account?.name || "Account" }
+		{ label: "[Account Name]" }
 	];
 
 	return (

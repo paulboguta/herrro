@@ -25,11 +25,10 @@ export const createQueryClient = () =>
 				},
 				retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 				
-				// Refetch on window focus only if data is stale
-				refetchOnWindowFocus: "always",
-				
-				// Don't refetch on reconnect if data is fresh
-				refetchOnReconnect: "always",
+				// Only refetch if data is stale
+				refetchOnWindowFocus: false,
+				refetchOnReconnect: false,
+				refetchOnMount: false,
 			},
 			mutations: {
 				// Retry mutations once on network errors

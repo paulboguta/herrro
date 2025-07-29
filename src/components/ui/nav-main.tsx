@@ -1,6 +1,7 @@
 "use client";
 
 import { CirclePlus, type LucideIcon } from "lucide-react";
+import Link from "next/link";
 
 import {
 	SidebarGroup,
@@ -37,10 +38,10 @@ export function NavMain({
 					{items.map((item) => (
 						<SidebarMenuItem key={item.title}>
 							<SidebarMenuButton tooltip={item.title} asChild>
-								<a href={item.url}>
+								<Link href={item.url}>
 									{item.icon && <item.icon />}
 									<span>{item.title}</span>
-								</a>
+								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					))}

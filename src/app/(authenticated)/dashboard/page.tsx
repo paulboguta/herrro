@@ -5,7 +5,9 @@ import transactionsData from "./transactions.json"
 import { api, HydrateClient } from "@/trpc/server"
 
 export default function Page() {
+  // Non-blocking prefetch for instant page render
   void api.account.getAll.prefetch();
+  void api.transaction.getInfinite.prefetch({ limit: 20 });
   
   return (
     <HydrateClient>

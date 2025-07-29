@@ -29,6 +29,22 @@ const handler = (req: NextRequest) =>
 						);
 					}
 				: undefined,
+		responseMeta(opts) {
+			const { ctx, paths, errors, type } = opts;
+			// Cache successful query responses for 5 minutes
+			if (type === 'query' && errors.length === 0 && paths) {
+				const path = paths[0];
+				// Cache account and transaction queries
+				if (path?.includes('account.getAll') || path?.includes('transaction.getInfinite')) {
+					return {
+						headers: {
+							'cache-control': 's-maxage=300, stale-while-revalidate=1800', // 5min cache, 30min stale
+						},
+					};
+				}
+			}
+			return {};
+		},
 	});
 
 export { handler as GET, handler as POST };
