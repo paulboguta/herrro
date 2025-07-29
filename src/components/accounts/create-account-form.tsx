@@ -1,14 +1,12 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +16,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { api } from "@/trpc/react";
-import { cacheInvalidation } from "@/lib/cache-utils";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { accountKeys } from "@/lib/cache-keys";
+import { cacheInvalidation } from "@/lib/cache-utils";
+import { api } from "@/trpc/react";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -132,7 +132,7 @@ export function CreateAccountForm({ onSuccess }: CreateAccountFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Add Account
         </Button>
