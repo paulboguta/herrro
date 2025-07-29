@@ -180,7 +180,7 @@ export function NetworthChart() {
   const { currentValue, periodChange, periodChangePercent, isPositive } = summary;
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
