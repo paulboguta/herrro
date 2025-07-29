@@ -174,9 +174,15 @@ transactions {
 ### Common Tasks
 - Always use `bun` commands instead of npm/yarn
 - Database changes require both schema updates and migrations
-- Financial operations need optimistic locking and proper error handling
+- Financial operations need optimistic locking and proper error handling  
 - UI changes should maintain consistency with shadcn/ui patterns
 - Performance optimizations should focus on reducing API calls and improving caching
+
+### Next.js 15 Critical Rules
+- **ALWAYS `await params` and `searchParams`** in server components (pages)
+- Interface: `params: Promise<{ id: string }>` not `params: { id: string }`
+- Usage: `const { id } = await params;` not `params.id`
+- This applies to ALL dynamic routes and pages with search parameters
 
 ### Architecture Decisions
 - Hybrid balance approach: cached current balance + transaction history
