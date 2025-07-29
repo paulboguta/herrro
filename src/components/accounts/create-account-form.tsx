@@ -32,12 +32,20 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { api } from "@/trpc/react";
+import { cacheInvalidation } from "@/lib/cache-utils";
+import { accountKeys } from "@/lib/cache-keys";
+import { toast } from "sonner";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Account name is required"),
-	type: z.enum(["checking", "savings", "credit", "investment", "loan", "other"]),
+	category: z.enum(["asset", "liability"]),
+	type: z.enum([
+		"checking", "savings", "credit", "investment", "loan", "other",
+		"cash", "crypto", "property", "vehicle", "other_asset",
+		"credit_card", "other_liability"
+	]),
 	currency: z.string().min(1, "Currency is required"),
-	balance: z.string().regex(/^\d+(\.\d{1,4})?$/, "Please enter a valid balance"),
+	initialBalance: z.string().regex(/^\d+(\.\d{1,4})?$/, "Please enter a valid initial balance"),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -53,24 +61,77 @@ export function CreateAccountForm({ onSuccess }: CreateAccountFormProps) {
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			name: "",
+			category: "asset",
 			type: "checking",
 			currency: "USD",
-			balance: "0",
+			initialBalance: "0",
 		},
 	});
 
 	const utils = api.useUtils();
 	const createAccount = api.account.create.useMutation({
-		onSuccess: async () => {
-			await utils.account.invalidate();
+		onMutate: (newAccount) => {
+			// Optimistic update: immediately add the account to the cache
+			const optimisticAccount = {
+				id: `temp-${Date.now()}`, // Temporary ID
+				...newAccount,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+			
+			// Update the cache optimistically
+			utils.account.getAll.setData(undefined, (old) => {
+				if (!old) return [optimisticAccount as any];
+				return [optimisticAccount as any, ...old];
+			});
+			
+			toast.success("Creating account...");
+		},
+		onSuccess: async (newAccount) => {
+			// Replace optimistic data with real data
+			utils.account.getAll.setData(undefined, (old) => {
+				if (!old) return [newAccount];
+				// Replace the optimistic entry with the real one
+				return old.map((account) => 
+					account.id.startsWith('temp-') ? newAccount : account
+				);
+			});
+			
+			// Smart invalidation - only invalidate related queries
+			await cacheInvalidation.account.invalidateAll(utils.client);
+			
 			form.reset();
 			setOpen(false);
 			onSuccess?.();
+			
+			toast.success("Account created successfully!");
+		},
+		onError: (error) => {
+			// Revert optimistic update on error
+			utils.account.getAll.setData(undefined, (old) => {
+				if (!old) return [];
+				// Remove the optimistic entry
+				return old.filter((account) => !account.id.startsWith('temp-'));
+			});
+			
+			toast.error("Failed to create account", {
+				description: error.message,
+			});
 		},
 	});
 
 	const handleSubmit = (data: FormData) => {
-		createAccount.mutate(data);
+		// For new accounts, both starting balance and current balance should be the same
+		const accountData = {
+			name: data.name,
+			category: data.category,
+			type: data.type,
+			currency: data.currency,
+			balance: data.initialBalance,
+			startingBalance: data.initialBalance,
+		};
+		
+		createAccount.mutate(accountData);
 	};
 
 	return (
@@ -106,23 +167,26 @@ export function CreateAccountForm({ onSuccess }: CreateAccountFormProps) {
 
 						<FormField
 							control={form.control}
-							name="type"
+							name="category"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Account Type</FormLabel>
-									<Select onValueChange={field.onChange} defaultValue={field.value}>
+									<FormLabel>Category</FormLabel>
+									<Select 
+										onValueChange={(value) => {
+											field.onChange(value);
+											// Reset type when category changes
+											form.setValue("type", value === "asset" ? "checking" : "credit_card");
+										}} 
+										defaultValue={field.value}
+									>
 										<FormControl>
 											<SelectTrigger>
 												<SelectValue />
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
-											<SelectItem value="checking">Checking</SelectItem>
-											<SelectItem value="savings">Savings</SelectItem>
-											<SelectItem value="credit">Credit</SelectItem>
-											<SelectItem value="investment">Investment</SelectItem>
-											<SelectItem value="loan">Loan</SelectItem>
-											<SelectItem value="other">Other</SelectItem>
+											<SelectItem value="asset">Asset</SelectItem>
+											<SelectItem value="liability">Liability</SelectItem>
 										</SelectContent>
 									</Select>
 									<FormMessage />
@@ -130,45 +194,92 @@ export function CreateAccountForm({ onSuccess }: CreateAccountFormProps) {
 							)}
 						/>
 
-						<div className="grid grid-cols-2 gap-4">
-							<FormField
-								control={form.control}
-								name="currency"
-								render={({ field }) => (
+						<FormField
+							control={form.control}
+							name="type"
+							render={({ field }) => {
+								const category = form.watch("category");
+								const assetTypes = [
+									{ value: "checking", label: "Checking" },
+									{ value: "savings", label: "Savings" },
+									{ value: "cash", label: "Cash" },
+									{ value: "investment", label: "Investment" },
+									{ value: "crypto", label: "Cryptocurrency" },
+									{ value: "property", label: "Property" },
+									{ value: "vehicle", label: "Vehicle" },
+									{ value: "other_asset", label: "Other Asset" },
+								];
+								const liabilityTypes = [
+									{ value: "credit_card", label: "Credit Card" },
+									{ value: "loan", label: "Loan" },
+									{ value: "credit", label: "Line of Credit" },
+									{ value: "other_liability", label: "Other Liability" },
+								];
+								const typeOptions = category === "liability" ? liabilityTypes : assetTypes;
+
+								return (
 									<FormItem>
-										<FormLabel>Currency</FormLabel>
-										<Select onValueChange={field.onChange} defaultValue={field.value}>
+										<FormLabel>Account Type</FormLabel>
+										<Select onValueChange={field.onChange} value={field.value}>
 											<FormControl>
 												<SelectTrigger>
 													<SelectValue />
 												</SelectTrigger>
 											</FormControl>
 											<SelectContent>
-												<SelectItem value="USD">USD</SelectItem>
-												<SelectItem value="EUR">EUR</SelectItem>
-												<SelectItem value="GBP">GBP</SelectItem>
-												<SelectItem value="CAD">CAD</SelectItem>
+												{typeOptions.map((type) => (
+													<SelectItem key={type.value} value={type.value}>
+														{type.label}
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
 										<FormMessage />
 									</FormItem>
-								)}
-							/>
+								);
+							}}
+						/>
 
-							<FormField
-								control={form.control}
-								name="balance"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Initial Balance</FormLabel>
+						<FormField
+							control={form.control}
+							name="currency"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Currency</FormLabel>
+									<Select onValueChange={field.onChange} defaultValue={field.value}>
 										<FormControl>
-											<Input placeholder="0.00" {...field} />
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
 										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+										<SelectContent>
+											<SelectItem value="USD">USD</SelectItem>
+											<SelectItem value="EUR">EUR</SelectItem>
+											<SelectItem value="GBP">GBP</SelectItem>
+											<SelectItem value="CAD">CAD</SelectItem>
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="initialBalance"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Initial Balance</FormLabel>
+									<FormControl>
+										<Input placeholder="0.00" {...field} />
+									</FormControl>
+									<FormMessage />
+									<p className="text-muted-foreground text-xs">
+										This will be set as both your starting and current balance
+									</p>
+								</FormItem>
+							)}
+						/>
 
 						<div className="flex justify-end space-x-2 pt-4">
 							<Button type="button" variant="outline" onClick={() => setOpen(false)}>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -16,29 +17,36 @@ interface AccountCardProps {
 
 export function AccountCard({ account }: AccountCardProps) {
 	return (
-		<Card>
-			<CardHeader className="pb-3">
-				<div className="flex items-center justify-between">
-					<CardTitle className="text-lg">{account.name}</CardTitle>
-					<Badge variant="outline" className="capitalize">
-						{account.type}
-					</Badge>
-				</div>
-				<CardDescription className="text-muted-foreground text-xs">
-					Created {new Date(account.createdAt).toLocaleDateString()}
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div className="space-y-2">
+		<Link href={`/accounts/${account.id}`}>
+			<Card className="cursor-pointer transition-colors hover:bg-muted/50">
+				<CardHeader className="pb-3">
 					<div className="flex items-center justify-between">
-						<span className="text-muted-foreground text-sm">Balance</span>
-						<span className="font-semibold">
-							{account.currency}{" "}
-							{Number.parseFloat(account.balance).toLocaleString()}
-						</span>
+						<CardTitle className="text-lg">{account.name}</CardTitle>
+						<div className="flex gap-2">
+							<Badge variant={account.category === "asset" ? "default" : "destructive"} className="capitalize">
+								{account.category}
+							</Badge>
+							<Badge variant="outline" className="capitalize">
+								{account.type.replace(/_/g, " ")}
+							</Badge>
+						</div>
 					</div>
-				</div>
-			</CardContent>
-		</Card>
+					<CardDescription className="text-muted-foreground text-xs">
+						Created {new Date(account.createdAt).toLocaleDateString()}
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="space-y-2">
+						<div className="flex items-center justify-between">
+							<span className="text-muted-foreground text-sm">Balance</span>
+							<span className="font-semibold">
+								{account.currency}{" "}
+								{Number.parseFloat(account.balance).toLocaleString()}
+							</span>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		</Link>
 	);
 }
