@@ -1,7 +1,7 @@
-import { ChartAreaInteractive } from "@/components/ui/chart-area-interactive";
 import { DashboardTransactionsTable } from "@/components/dashboard/dashboard-transactions-table";
+import { ChartAreaInteractive } from "@/components/ui/chart-area-interactive";
 import { SiteHeader } from "@/components/ui/site-header";
-import { api, HydrateClient } from "@/trpc/server";
+import { HydrateClient, api } from "@/trpc/server";
 
 export default function Page() {
   // Non-blocking prefetch for instant page render
