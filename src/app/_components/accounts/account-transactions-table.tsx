@@ -1,34 +1,34 @@
 "use client";
 
-import * as React from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type SortingState,
   useReactTable,
-  type VisibilityState,
 } from "@tanstack/react-table";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, Search } from "lucide-react";
+import * as React from "react";
 
+import { CreateTransactionForm } from "@/app/_components/transactions/create-transaction-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { api } from "@/trpc/react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
+import { api } from "@/trpc/react";
 
 // Transaction type from our tRPC API
 type Transaction = {
@@ -181,7 +181,7 @@ export function AccountTransactionsTable({ accountId }: AccountTransactionsTable
           <CreateTransactionForm defaultAccountId={accountId} />
         </div>
         <div className="mx-4 rounded-md border bg-card lg:mx-6 dark:bg-card">
-          <div className="h-64 animate-pulse bg-muted rounded" />
+          <div className="h-64 animate-pulse rounded bg-muted" />
         </div>
       </div>
     );

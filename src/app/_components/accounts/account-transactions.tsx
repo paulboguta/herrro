@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { CreateTransactionForm } from "@/app/_components/transactions/create-transaction-form";
 import { Badge } from "@/components/ui/badge";
-import { api } from "@/trpc/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { Loader2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
+import { api } from "@/trpc/react";
+import { ArrowDownLeft, ArrowUpRight, Loader2 } from "lucide-react";
+import { useMemo } from "react";
 
 interface AccountTransactionsProps {
   accountId: string;
@@ -17,17 +17,17 @@ function TransactionSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+        <div key={i} className="flex items-center justify-between rounded-lg border p-4">
           <div className="flex items-center space-x-4">
-            <div className="h-8 w-8 bg-muted animate-pulse rounded-full" />
+            <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
             <div className="space-y-1">
-              <div className="h-4 bg-muted animate-pulse rounded w-32" />
-              <div className="h-3 bg-muted animate-pulse rounded w-24" />
+              <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-24 animate-pulse rounded bg-muted" />
             </div>
           </div>
-          <div className="text-right space-y-1">
-            <div className="h-4 bg-muted animate-pulse rounded w-16" />
-            <div className="h-4 bg-muted animate-pulse rounded w-12" />
+          <div className="space-y-1 text-right">
+            <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-12 animate-pulse rounded bg-muted" />
           </div>
         </div>
       ))}
@@ -62,9 +62,9 @@ export function AccountTransactions({ accountId }: AccountTransactionsProps) {
   if (error) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center h-64">
+        <CardContent className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <h3 className="font-semibold text-lg text-destructive mb-2">Error loading transactions</h3>
+            <h3 className="mb-2 font-semibold text-destructive text-lg">Error loading transactions</h3>
             <p className="text-muted-foreground">{error.message}</p>
           </div>
         </CardContent>
@@ -94,10 +94,10 @@ export function AccountTransactions({ accountId }: AccountTransactionsProps) {
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex h-64 items-center justify-center">
             <div className="text-center">
-              <h3 className="font-semibold text-lg mb-2">No transactions yet</h3>
-              <p className="text-muted-foreground mb-4">Add your first transaction to see it here</p>
+              <h3 className="mb-2 font-semibold text-lg">No transactions yet</h3>
+              <p className="mb-4 text-muted-foreground">Add your first transaction to see it here</p>
               <CreateTransactionForm defaultAccountId={accountId} />
             </div>
           </div>
@@ -110,7 +110,7 @@ export function AccountTransactions({ accountId }: AccountTransactionsProps) {
                     <div className="flex items-center space-x-4">
                       {/* Transaction type icon */}
                       <div
-                        className={`p-2 rounded-full ${
+                        className={`rounded-full p-2 ${
                           transaction.type === "income" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
                         }`}
                       >
@@ -131,7 +131,7 @@ export function AccountTransactions({ accountId }: AccountTransactionsProps) {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-2 text-muted-foreground text-sm">
                           <span>{new Date(transaction.date).toLocaleDateString()}</span>
                           <span>•</span>
                           <Badge
@@ -151,7 +151,7 @@ export function AccountTransactions({ accountId }: AccountTransactionsProps) {
                     </div>
 
                     {/* Amount and type badge */}
-                    <div className="text-right space-y-1">
+                    <div className="space-y-1 text-right">
                       <p
                         className={`font-semibold ${transaction.type === "income" ? "text-green-600" : "text-red-600"}`}
                       >

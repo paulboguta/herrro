@@ -1,10 +1,10 @@
-import { notFound } from "next/navigation";
-import { api, HydrateClient } from "@/trpc/server";
+import { AccountChart } from "@/app/_components/accounts/account-chart";
+import { AccountHeader } from "@/app/_components/accounts/account-header";
+import { AccountTransactionsTable } from "@/app/_components/accounts/account-transactions-table";
+import { CreateTransactionForm } from "@/app/_components/transactions/create-transaction-form";
 import { SiteHeader } from "@/components/ui/site-header";
-import { AccountHeader } from "@/components/accounts/account-header";
-import { AccountChart } from "@/components/accounts/account-chart";
-import { AccountTransactionsTable } from "@/components/accounts/account-transactions-table";
-import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
+import { HydrateClient, api } from "@/trpc/server";
+import { notFound } from "next/navigation";
 
 interface AccountDetailPageProps {
   params: Promise<{

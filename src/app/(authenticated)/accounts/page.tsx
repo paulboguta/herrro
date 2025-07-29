@@ -1,5 +1,5 @@
-import { AccountsList } from "@/components/accounts/accounts-list";
-import { CreateAccountForm } from "@/components/accounts/create-account-form";
+import { AccountsList } from "@/app/_components/accounts/accounts-list";
+import { CreateAccountForm } from "@/app/_components/accounts/create-account-form";
 import { SiteHeader } from "@/components/ui/site-header";
 import { HydrateClient, api } from "@/trpc/server";
 

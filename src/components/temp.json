@@ -1,0 +1,44 @@
+{
+  "7d": [
+    { "period": "Dec 23", "total": 158070 },
+    { "period": "Dec 24", "total": 158560 },
+    { "period": "Dec 25", "total": 158310 },
+    { "period": "Dec 26", "total": 159700 },
+    { "period": "Dec 27", "total": 159090 },
+    { "period": "Dec 28", "total": 159800 },
+    { "period": "Dec 29", "total": 160070 }
+  ],
+  "1m": [
+    { "period": "Dec 2", "total": 156880 },
+    { "period": "Dec 9", "total": 158270 },
+    { "period": "Dec 16", "total": 159210 },
+    { "period": "Dec 29", "total": 160070 }
+  ],
+  "3m": [
+    { "period": "Oct 1", "total": 154950 },
+    { "period": "Nov 1", "total": 157330 },
+    { "period": "Dec 29", "total": 160070 }
+  ],
+  "6m": [
+    { "period": "Jul 1", "total": 151050 },
+    { "period": "Aug 1", "total": 153310 },
+    { "period": "Sep 1", "total": 154300 },
+    { "period": "Oct 1", "total": 154950 },
+    { "period": "Nov 1", "total": 157330 },
+    { "period": "Dec 29", "total": 160070 }
+  ],
+  "12m": [
+    { "period": "Jan 1", "total": 146050 },
+    { "period": "Feb 1", "total": 142150 },
+    { "period": "Mar 1", "total": 147330 },
+    { "period": "Apr 1", "total": 149220 },
+    { "period": "May 1", "total": 146000 },
+    { "period": "Jun 1", "total": 149400 },
+    { "period": "Jul 1", "total": 151050 },
+    { "period": "Aug 1", "total": 153310 },
+    { "period": "Sep 1", "total": 154300 },
+    { "period": "Oct 1", "total": 154950 },
+    { "period": "Nov 1", "total": 157330 },
+    { "period": "Dec 29", "total": 160070 }
+  ]
+}

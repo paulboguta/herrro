@@ -1,4 +1,4 @@
-import { DashboardTransactionsTable } from "@/components/dashboard/dashboard-transactions-table";
+import { DashboardTransactionsTable } from "@/app/_components/dashboard/dashboard-transactions-table";
 import { ChartAreaInteractive } from "@/components/ui/chart-area-interactive";
 import { SiteHeader } from "@/components/ui/site-header";
 import { HydrateClient, api } from "@/trpc/server";

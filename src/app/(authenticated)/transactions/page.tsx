@@ -1,5 +1,5 @@
-import { DashboardTransactionsTable } from "@/components/dashboard/dashboard-transactions-table";
-import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
+import { DashboardTransactionsTable } from "@/app/_components/dashboard/dashboard-transactions-table";
+import { CreateTransactionForm } from "@/app/_components/transactions/create-transaction-form";
 import { SiteHeader } from "@/components/ui/site-header";
 import { HydrateClient, api } from "@/trpc/server";
 
