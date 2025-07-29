@@ -2,11 +2,11 @@
 
 import type * as React from "react";
 import {
-	BuildingBank,
 	LayoutDashboard,
 	Receipt,
 	Settings,
 	PiggyBank,
+	Landmark,
 } from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
@@ -32,7 +32,7 @@ const data = {
 		{
 			title: "Accounts",
 			url: "/accounts",
-			icon: BuildingBank,
+			icon: Landmark,
 		},
 		{
 			title: "Transactions",

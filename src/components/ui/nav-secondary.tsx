@@ -10,6 +10,8 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useActivePage } from "@/hooks/use-active-page";
+import { cn } from "@/lib/utils";
 
 export function NavSecondary({
 	items,
@@ -21,13 +23,20 @@ export function NavSecondary({
 		icon: LucideIcon;
 	}[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+	const { isActive } = useActivePage();
+
 	return (
 		<SidebarGroup {...props}>
 			<SidebarGroupContent>
 				<SidebarMenu>
 					{items.map((item) => (
 						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton asChild>
+							<SidebarMenuButton 
+								asChild
+								className={cn(
+									isActive(item.url) && "bg-muted/60"
+								)}
+							>
 								<a href={item.url}>
 									<item.icon />
 									<span>{item.title}</span>
