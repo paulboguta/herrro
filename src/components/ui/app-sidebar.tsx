@@ -1,6 +1,6 @@
 "use client";
 
-import { Landmark, LayoutDashboard, PiggyBank, Receipt, Settings } from "lucide-react";
+import { Code, Landmark, LayoutDashboard, PiggyBank, Receipt, Settings } from "lucide-react";
 import type * as React from "react";
 
 import { NavMain } from "@/components/ui/nav-main";
@@ -87,6 +87,11 @@ const data = {
       title: "Settings",
       url: "/dashboard/settings",
       icon: Settings,
+    },
+    {
+      title: "Dev",
+      url: "/dev",
+      icon: Code,
     },
   ],
 };
