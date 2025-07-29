@@ -1,14 +1,13 @@
-import { ChartAreaInteractive } from "@/components/ui/chart-area-interactive"
-import { TransactionsTable } from "@/components/ui/transactions-table"
-import { SiteHeader } from "@/components/ui/site-header"
-import transactionsData from "./transactions.json"
-import { api, HydrateClient } from "@/trpc/server"
+import { ChartAreaInteractive } from "@/components/ui/chart-area-interactive";
+import { DashboardTransactionsTable } from "@/components/dashboard/dashboard-transactions-table";
+import { SiteHeader } from "@/components/ui/site-header";
+import { api, HydrateClient } from "@/trpc/server";
 
 export default function Page() {
   // Non-blocking prefetch for instant page render
   void api.account.getAll.prefetch();
   void api.transaction.getInfinite.prefetch({ limit: 20 });
-  
+
   return (
     <HydrateClient>
       <SiteHeader />
@@ -18,10 +17,10 @@ export default function Page() {
             <div className="px-4 lg:px-6">
               <ChartAreaInteractive />
             </div>
-            <TransactionsTable data={transactionsData} />
+            <DashboardTransactionsTable />
           </div>
         </div>
       </div>
     </HydrateClient>
-  )
+  );
 }

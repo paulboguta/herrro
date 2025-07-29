@@ -3,8 +3,8 @@ import { accountRouter } from "./routers/account";
 import { transactionRouter } from "./routers/transaction";
 
 export const appRouter = createTRPCRouter({
-	account: accountRouter,
-	transaction: transactionRouter,
+  account: accountRouter,
+  transaction: transactionRouter,
 });
 
 // export type definition of API
