@@ -5,6 +5,11 @@ import "@/styles/globals.css";
 import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 
+// Import debug utilities in development
+if (process.env.NODE_ENV === "development") {
+  import("@/lib/debug-persistence");
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

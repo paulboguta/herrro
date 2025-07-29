@@ -10,6 +10,7 @@ import {
 import { eq, and, desc, sql, gte, lte } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { updateDailySnapshotOptimistic } from "@/server/api/services/netWorthCalculator";
 
 export const transactionRouter = createTRPCRouter({
   create: protectedProcedure.input(createTransactionSchema).mutation(async ({ ctx, input }) => {
@@ -31,7 +32,10 @@ export const transactionRouter = createTRPCRouter({
 
     while (retryCount < maxRetries) {
       try {
-        return await ctx.db.transaction(async (tx) => {
+        const result = await ctx.db.transaction(async (tx) => {
+          console.log(`\n🏁 STARTING DATABASE TRANSACTION`);
+          console.log(`Creating transaction: ${input.type} ${input.amount} for account ${input.accountId}`);
+          
           // Get current account with version for optimistic locking
           const currentAccount = await tx.query.accounts.findFirst({
             where: eq(accounts.id, input.accountId),
@@ -43,19 +47,24 @@ export const transactionRouter = createTRPCRouter({
           });
 
           if (!currentAccount) {
+            console.log(`❌ Account ${input.accountId} not found`);
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Account not found during transaction",
             });
           }
 
+          console.log(`📊 Current account balance: ${currentAccount.balance}, version: ${currentAccount.balanceVersion}`);
+
           // Calculate new balance and running balance
           const amountChange = input.type === "income" ? input.amount : `-${input.amount}`;
-
           const newBalance = Number.parseFloat(currentAccount.balance) + Number.parseFloat(amountChange);
           const runningBalance = newBalance.toFixed(4);
 
+          console.log(`💰 Balance change: ${amountChange}, new balance: ${runningBalance}`);
+
           // Create the transaction with running balance
+          console.log(`📝 Inserting transaction record...`);
           const [transaction] = await tx
             .insert(transactions)
             .values({
@@ -72,7 +81,10 @@ export const transactionRouter = createTRPCRouter({
             })
             .returning();
 
+          console.log(`✅ Transaction record created with ID: ${transaction.id}`);
+
           // Update account balance with optimistic locking
+          console.log(`🔄 Updating account balance with optimistic lock...`);
           const updateResult = await tx
             .update(accounts)
             .set({
@@ -85,29 +97,93 @@ export const transactionRouter = createTRPCRouter({
 
           // Check if the optimistic lock succeeded
           if (updateResult.length === 0) {
+            console.log(`❌ Optimistic lock failed - account was modified by another transaction`);
             throw new TRPCError({
               code: "CONFLICT",
               message: "Account was modified by another transaction",
             });
           }
 
-          return {
+          console.log(`✅ Account balance updated successfully to ${updateResult[0].balance}`);
+
+          // Calculate and update daily snapshot optimistically
+          try {
+            console.log(`\n🔄 TRIGGERING OPTIMISTIC SNAPSHOT UPDATE after transaction creation`);
+            console.log(`Transaction: ${input.type} ${input.amount} on ${input.date}`);
+            console.log(`User: ${ctx.user.id}, Account: ${input.accountId}`);
+            console.log(`New account balance: ${runningBalance}`);
+            
+            // Calculate total net worth with the new account balance
+            const allUserAccounts = await tx
+              .select()
+              .from(accounts)
+              .where(eq(accounts.userId, ctx.user.id));
+            
+            let totalNetWorth = 0;
+            
+            for (const acc of allUserAccounts) {
+              let accountBalance = 0;
+              
+              if (acc.id === input.accountId) {
+                // Use the new running balance for the affected account
+                accountBalance = Number(runningBalance);
+                console.log(`Using new balance ${accountBalance} for affected account ${acc.name}`);
+              } else {
+                // Use current balance for other accounts
+                accountBalance = Number(acc.balance);
+                console.log(`Using current balance ${accountBalance} for account ${acc.name}`);
+              }
+              
+              // Add to net worth (assets positive, liabilities negative)
+              if (acc.category === 'asset') {
+                totalNetWorth += accountBalance;
+              } else {
+                totalNetWorth -= accountBalance;
+              }
+            }
+            
+            console.log(`Calculated total net worth: ${totalNetWorth}`);
+            
+            await updateDailySnapshotOptimistic(ctx.user.id, new Date(input.date), totalNetWorth);
+            console.log(`✅ OPTIMISTIC SNAPSHOT UPDATE COMPLETED`);
+          } catch (error) {
+            console.error('❌ Failed to update daily snapshot optimistically:', error);
+            // Don't fail the transaction creation if snapshot update fails
+          }
+
+          const result = {
             transaction,
             updatedBalance: updateResult[0].balance,
             balanceVersion: updateResult[0].balanceVersion,
           };
+          
+          console.log(`🎉 DATABASE TRANSACTION ABOUT TO COMMIT`);
+          console.log(`Final result: Transaction ID ${transaction.id}, Balance: ${updateResult[0].balance}`);
+          
+          return result;
         });
+        
+        console.log(`🏆 DATABASE TRANSACTION SUCCESSFULLY COMMITTED!`);
+        console.log(`Transaction ID ${result.transaction.id} is now permanently saved`);
+        
+        return result;
       } catch (error) {
+        console.log(`❌ DATABASE TRANSACTION FAILED:`, error);
+        
         if ((error as TRPCError).code === "CONFLICT" && retryCount < maxRetries - 1) {
           retryCount++;
+          console.log(`🔄 Retrying transaction (attempt ${retryCount + 1}/${maxRetries})`);
           // Small delay before retry to reduce contention
           await new Promise((resolve) => setTimeout(resolve, Math.random() * 100));
           continue;
         }
+        
+        console.log(`💀 TRANSACTION COMPLETELY FAILED after ${retryCount + 1} attempts`);
         throw error;
       }
     }
 
+    console.log(`💀 ALL RETRY ATTEMPTS EXHAUSTED`);
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "Failed to create transaction after multiple retries",
@@ -250,6 +326,51 @@ export const transactionRouter = createTRPCRouter({
               code: "CONFLICT",
               message: "Account was modified by another transaction",
             });
+          }
+
+          // Calculate and update daily snapshot optimistically after deletion
+          try {
+            console.log(`\n🗑️ TRIGGERING OPTIMISTIC SNAPSHOT UPDATE after transaction deletion`);
+            console.log(`Deleted transaction: ${transaction.type} ${transaction.amount} on ${transaction.date}`);
+            console.log(`User: ${ctx.user.id}, Account: ${transaction.accountId}`);
+            console.log(`New account balance after deletion: ${balanceStr}`);
+            
+            // Calculate total net worth with the updated account balance
+            const allUserAccounts = await tx
+              .select()
+              .from(accounts)
+              .where(eq(accounts.userId, ctx.user.id));
+            
+            let totalNetWorth = 0;
+            
+            for (const acc of allUserAccounts) {
+              let accountBalance = 0;
+              
+              if (acc.id === transaction.accountId) {
+                // Use the new balance for the affected account
+                accountBalance = Number(balanceStr);
+                console.log(`Using new balance ${accountBalance} for affected account ${acc.name}`);
+              } else {
+                // Use current balance for other accounts
+                accountBalance = Number(acc.balance);
+                console.log(`Using current balance ${accountBalance} for account ${acc.name}`);
+              }
+              
+              // Add to net worth (assets positive, liabilities negative)
+              if (acc.category === 'asset') {
+                totalNetWorth += accountBalance;
+              } else {
+                totalNetWorth -= accountBalance;
+              }
+            }
+            
+            console.log(`Calculated total net worth after deletion: ${totalNetWorth}`);
+            
+            await updateDailySnapshotOptimistic(ctx.user.id, new Date(transaction.date), totalNetWorth);
+            console.log(`✅ OPTIMISTIC SNAPSHOT UPDATE COMPLETED`);
+          } catch (error) {
+            console.error('❌ Failed to update daily snapshot optimistically:', error);
+            // Don't fail the transaction deletion if snapshot update fails
           }
 
           return {

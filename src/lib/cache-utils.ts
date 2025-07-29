@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { accountKeys, transactionKeys } from "./cache-keys";
+import { accountKeys, transactionKeys, portfolioKeys } from "./cache-keys";
 
 // Smart cache invalidation strategies
 export const cacheInvalidation = {
@@ -36,6 +36,8 @@ export const cacheInvalidation = {
         if (!old || !Array.isArray(old)) return old;
         return old.map((account: any) => (account.id === accountId ? updater(account) : account));
       });
+      // Invalidate portfolio data since account balance changed
+      cacheInvalidation.portfolio.invalidateAll(queryClient);
     },
   },
 
@@ -62,6 +64,8 @@ export const cacheInvalidation = {
         }),
         // Also invalidate the account to update balance
         cacheInvalidation.account.invalidateOne(queryClient, accountId),
+        // Invalidate portfolio data since balances changed
+        cacheInvalidation.portfolio.invalidateAll(queryClient),
       ]);
     },
 
@@ -86,6 +90,25 @@ export const cacheInvalidation = {
       queryClient.setQueriesData({ queryKey: transactionKeys.all }, (old: any) => {
         if (!old || !Array.isArray(old)) return old;
         return old.filter((t: any) => t.id !== transactionId);
+      });
+    },
+  },
+
+  // Portfolio invalidation strategies
+  portfolio: {
+    // Invalidate all portfolio queries
+    invalidateAll: (queryClient: QueryClient) => {
+      return queryClient.invalidateQueries({
+        queryKey: portfolioKeys.all,
+        refetchType: "active",
+      });
+    },
+
+    // Invalidate specific period data
+    invalidatePeriod: (queryClient: QueryClient, period: string) => {
+      return queryClient.invalidateQueries({
+        queryKey: portfolioKeys.dailyChartData(period),
+        refetchType: "active",
       });
     },
   },

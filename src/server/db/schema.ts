@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, decimal, pgEnum, uuid, bigint } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { bigint, date, decimal, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 // Account category enum
@@ -63,6 +63,19 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// Daily snapshots for net worth tracking
+export const dailySnapshots = pgTable("daily_snapshots", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  date: date("date").notNull(),
+  netWorth: decimal("net_worth", { precision: 19, scale: 4 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  // Unique constraint - one snapshot per user per day
+  userDateUnique: unique().on(table.userId, table.date),
+}));
 
 // Relations
 export const accountsRelations = relations(accounts, ({ many }) => ({

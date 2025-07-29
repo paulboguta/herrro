@@ -2,6 +2,7 @@
 
 import { type QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
@@ -11,6 +12,7 @@ import SuperJSON from "superjson";
 import type { AppRouter } from "@/server/api/root";
 import { createQueryClient } from "./query-client";
 import { configureBackgroundRefetch } from "@/lib/cache-utils";
+import { createPersister, removeStalePersistedData, getDehydrateOptions } from "@/lib/query-persistence";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -42,6 +44,7 @@ export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
+  const [persister] = useState(() => createPersister());
 
   const [trpcClient] = useState(() =>
     api.createClient({
@@ -68,6 +71,27 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
   // 	configureBackgroundRefetch(queryClient);
   // }, [queryClient]);
 
+  // If we have a persister, use PersistQueryClientProvider
+  if (persister) {
+    return (
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          maxAge: 10 * 60 * 1000, // 10 minutes
+          buster: "v1", // Cache buster for invalidation
+          dehydrateOptions: getDehydrateOptions(),
+        }}
+      >
+        <api.Provider client={trpcClient} queryClient={queryClient}>
+          {props.children}
+        </api.Provider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </PersistQueryClientProvider>
+    );
+  }
+
+  // Fallback without persistence (e.g., if localStorage is not available)
   return (
     <QueryClientProvider client={queryClient}>
       <api.Provider client={trpcClient} queryClient={queryClient}>

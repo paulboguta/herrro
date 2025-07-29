@@ -1,5 +1,6 @@
 import { QueryClient, defaultShouldDehydrateQuery } from "@tanstack/react-query";
 import SuperJSON from "superjson";
+import { shouldPersistQuery } from "@/lib/query-persistence";
 
 export const createQueryClient = () =>
   new QueryClient({
@@ -34,7 +35,17 @@ export const createQueryClient = () =>
       },
       dehydrate: {
         serializeData: SuperJSON.serialize,
-        shouldDehydrateQuery: (query) => defaultShouldDehydrateQuery(query) || query.state.status === "pending",
+        shouldDehydrateQuery: (query) => {
+          // Default dehydration logic
+          const defaultDehydrate = defaultShouldDehydrateQuery(query) || query.state.status === "pending";
+          
+          // Also check if this query should be persisted
+          if (query.state.status === "success" && shouldPersistQuery(query.queryKey as unknown[])) {
+            return true;
+          }
+          
+          return defaultDehydrate;
+        },
       },
       hydrate: {
         deserializeData: SuperJSON.deserialize,

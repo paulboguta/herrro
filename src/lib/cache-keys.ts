@@ -24,6 +24,15 @@ export const transactionKeys = {
       : ([...transactionKeys.all, "infinite"] as const),
 } as const;
 
+export const portfolioKeys = {
+  all: ["portfolio"] as const,
+  dailyChartData: (period?: string) =>
+    period
+      ? ([...portfolioKeys.all, "getDailyChartData", { period }] as const)
+      : ([...portfolioKeys.all, "getDailyChartData"] as const),
+  currentNetWorth: () => [...portfolioKeys.all, "getCurrentNetWorth"] as const,
+} as const;
+
 // Helper to get all query keys for a resource
 export const getAllQueryKeys = (resource: "account" | "transaction") => {
   switch (resource) {

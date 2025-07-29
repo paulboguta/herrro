@@ -1,5 +1,5 @@
 import { DashboardTransactionsTable } from "@/app/_components/dashboard/dashboard-transactions-table";
-import { AnimatedHatchedPatternAreaChart } from "@/components/temp-chart";
+import { NetworthChart } from "@/app/_components/dashboard/networth-chart";
 import { SiteHeader } from "@/components/ui/site-header";
 import { HydrateClient, api } from "@/trpc/server";
 
@@ -24,7 +24,7 @@ export default async function DevPage() {
             </div>
             <div className="px-4 lg:px-6">
               <div className="overflow-hidden">
-                <AnimatedHatchedPatternAreaChart />
+                <NetworthChart />
               </div>
             </div>
           </div>
