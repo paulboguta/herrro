@@ -6,7 +6,10 @@
       "Bash(mv:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(bun:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(psql:*)"
     ],
     "deny": []
   }
