@@ -14,7 +14,7 @@ export const accountRouter = createTRPCRouter({
     // }),
 
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    const account = await ctx.db.query.accounts.findFirst({
+    const account = await ctx.db.query.account_table.findFirst({
       where: eq(account_table.id, input),
     });
 
@@ -22,7 +22,7 @@ export const accountRouter = createTRPCRouter({
   }),
 
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const accounts = await ctx.db.query.accounts.findMany({
+    const accounts = await ctx.db.query.account_table.findMany({
       orderBy: (accounts, { desc }) => [desc(accounts.name)],
     });
 

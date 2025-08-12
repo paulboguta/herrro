@@ -14,7 +14,7 @@ export const transactionRouter = createTRPCRouter({
     // }),
 
   getAll: publicProcedure.query(async ({ ctx }) => {
-    const result = await ctx.db.query.transactions.findMany({
+    const result = await ctx.db.query.transaction_table.findMany({
       orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
     });
 
@@ -22,7 +22,7 @@ export const transactionRouter = createTRPCRouter({
   }),
 
   getByAccountId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    const result = await ctx.db.query.transactions.findMany({
+    const result = await ctx.db.query.transaction_table.findMany({
       where: eq(transaction_table.account, input),
       orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
     });
