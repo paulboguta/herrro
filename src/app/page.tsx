@@ -1,17 +1,24 @@
-import { db } from "@/server/db";
-import { transactions as transactionsSchema } from "@/server/db/schema";
-import { HydrateClient } from "@/trpc/server";
+import { api, HydrateClient } from "@/trpc/server";
+import Link from "next/link";
 
 export default async function Home() {
-  // const hello = await api.post.hello({ text: "from tRPC" });
+  const transactions = await api.transaction.getAll();
 
   // void api.post.getLatest.prefetch();
 
-  const transactions = await db.select().from(transactionsSchema);
+  const accounts = await api.account.getAll();
 
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+        {
+          accounts.map((account) => (
+            <div key={account.id} className="flex gap-2 max-w-lg w-full justify-between">
+              <div>{account.name}</div>
+              <Link href={`/account/${account.id}`}>View</Link>
+            </div>
+          ))
+        }
         {
           transactions.map((transaction) => (
             <div key={transaction.id} className="flex gap-2 max-w-lg w-full justify-between">
