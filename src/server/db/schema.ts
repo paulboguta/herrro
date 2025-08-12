@@ -6,6 +6,7 @@ export const account_table = pgTable(
   (d) => ({
     id: d.uuid().primaryKey().defaultRandom(),
     name: d.varchar({ length: 256 }).notNull(),
+    ownerId: d.uuid(), // clerk user id
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -18,6 +19,7 @@ export const transaction_table = pgTable(
   "transaction",
   (d) => ({
     id: d.uuid().primaryKey().defaultRandom(),
+    ownerId: d.uuid(), // clerk user id
     date: d.timestamp({ withTimezone: true }).notNull(),
     type: d.varchar({ length: 256 }).notNull(),
     amount: d.numeric({ precision: 12, scale: 2 }).notNull(),
@@ -31,5 +33,5 @@ export const transaction_table = pgTable(
       .notNull(),
     updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
   }),
-  (t) => [index("account_idx").on(t.account)],
+  (t) => [index("account_idx").on(t.account), index("owner_idx").on(t.ownerId)],
 );
