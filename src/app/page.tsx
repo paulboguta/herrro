@@ -1,5 +1,7 @@
 import { api, HydrateClient } from "@/trpc/server";
 import Link from "next/link";
+import { CreateAccount } from "./_components/create-account";
+import { CreateTransaction } from "./_components/create-transaction";
 
 export default async function Home() {
   const transactions = await api.transaction.getAll();
@@ -27,6 +29,9 @@ export default async function Home() {
             </div>
           ))
         }
+        <hr />
+        <CreateTransaction />
+        <CreateAccount />
       </main>
     </HydrateClient>
   );

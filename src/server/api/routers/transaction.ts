@@ -5,13 +5,31 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
-    // create: publicProcedure
-    // .input(z.object({ name: z.string().min(1) }))
-    // .mutation(async ({ ctx, input }) => {
-    //   await ctx.db.insert(posts).values({
-    //     name: input.name,
-    //   });
-    // }),
+  create: publicProcedure
+    .input(
+      z.object({
+        account: z.string().uuid(),
+        date: z.string().min(1),
+        type: z.enum(["income", "expense", "transfer"]),
+        amount: z.string().min(1),
+        currency: z.string().min(1).default("USD"),
+        category: z.string().min(1),
+        description: z.string().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(transaction_table).values({
+        account: input.account,
+        ownerId: ctx.auth.userId,
+        date: new Date(input.date),
+        type: input.type,
+        amount: input.amount,
+        currency: input.currency ?? "USD",
+        category: input.category,
+        description: input.description ?? null,
+      });
+      return { success: true };
+    }),
 
   getAll: publicProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.query.transaction_table.findMany({

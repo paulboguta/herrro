@@ -5,13 +5,12 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const accountRouter = createTRPCRouter({
-    // create: publicProcedure
-    // .input(z.object({ name: z.string().min(1) }))
-    // .mutation(async ({ ctx, input }) => {
-    //   await ctx.db.insert(posts).values({
-    //     name: input.name,
-    //   });
-    // }),
+  create: publicProcedure
+    .input(z.object({ name: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(account_table).values({ name: input.name, ownerId: ctx.auth.userId });
+      return { success: true };
+    }),
 
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const account = await ctx.db.query.account_table.findFirst({
