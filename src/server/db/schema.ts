@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { index, pgTable } from "drizzle-orm/pg-core";
 
-export const accounts = pgTable(
+export const account_table = pgTable(
   "account",
   (d) => ({
     id: d.uuid().primaryKey().defaultRandom(),
@@ -14,7 +14,7 @@ export const accounts = pgTable(
   }),
 );
 
-export const transactions = pgTable(
+export const transaction_table = pgTable(
   "transaction",
   (d) => ({
     id: d.uuid().primaryKey().defaultRandom(),
@@ -24,7 +24,7 @@ export const transactions = pgTable(
     currency: d.varchar({ length: 256 }).notNull().default('USD'),
     category: d.varchar({ length: 256 }).notNull(),
     description: d.varchar({ length: 256 }),
-    account: d.uuid().references(() => accounts.id, { onDelete: "cascade" }),
+    account: d.uuid().references(() => account_table.id, { onDelete: "cascade" }),
     createdAt: d
       .timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)

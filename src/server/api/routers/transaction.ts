@@ -1,6 +1,6 @@
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { transactions } from "@/server/db/schema";
+import { transaction_table } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -23,7 +23,7 @@ export const transactionRouter = createTRPCRouter({
 
   getByAccountId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const result = await ctx.db.query.transactions.findMany({
-      where: eq(transactions.account, input),
+      where: eq(transaction_table.account, input),
       orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
     });
 

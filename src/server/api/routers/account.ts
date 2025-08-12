@@ -1,6 +1,6 @@
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { accounts } from "@/server/db/schema";
+import { account_table } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -15,7 +15,7 @@ export const accountRouter = createTRPCRouter({
 
   getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const account = await ctx.db.query.accounts.findFirst({
-      where: eq(accounts.id, input),
+      where: eq(account_table.id, input),
     });
 
     return account ?? null;
