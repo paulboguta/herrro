@@ -8,7 +8,9 @@ import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter
+  SidebarFooter,
+  SidebarHeader,
+  SidebarTrigger
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "./mode-toggle";
@@ -43,6 +45,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <SidebarTrigger className="ml-[2px]" />
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
