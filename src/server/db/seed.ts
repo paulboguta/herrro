@@ -15,6 +15,7 @@ const transactionCategories = [
   "Shopping",
   "Healthcare",
   "Freelance Income",
+  undefined,
 ];
 
 const pool = new Pool({
