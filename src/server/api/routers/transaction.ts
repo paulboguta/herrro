@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { transaction_table } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
@@ -32,20 +32,21 @@ export const transactionRouter = createTRPCRouter({
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.query.transaction_table.findMany({
-      orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
+      where: eq(transaction_table.ownerId, ctx.auth.userId!),
+      orderBy: (transactions, { desc }) => [desc(transactions.date)],
     });
 
-    return result ?? null;
+    return result;
   }),
 
   getByAccountId: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
       const result = await ctx.db.query.transaction_table.findMany({
-        where: eq(transaction_table.account, input),
-        orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
+        where: and(eq(transaction_table.account, input), eq(transaction_table.ownerId, ctx.auth.userId!)),
+        orderBy: (transactions, { desc }) => [desc(transactions.date)],
       });
 
-      return result ?? null;
+      return result;
     }),
 });

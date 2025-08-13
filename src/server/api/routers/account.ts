@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { account_table } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const accountRouter = createTRPCRouter({
@@ -9,7 +9,7 @@ export const accountRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db
         .insert(account_table)
-        .values({ name: input.name, ownerId: ctx.auth.userId });
+        .values({ name: input.name, ownerId: ctx.auth.userId })
       return { success: true };
     }),
 
@@ -17,17 +17,21 @@ export const accountRouter = createTRPCRouter({
     .input(z.string())
     .query(async ({ ctx, input }) => {
       const account = await ctx.db.query.account_table.findFirst({
-        where: eq(account_table.id, input),
+        where: and(
+          eq(account_table.id, input),
+          eq(account_table.ownerId, ctx.auth.userId!),
+        ),
       });
 
-      return account ?? null;
+      return account;
     }),
 
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const accounts = await ctx.db.query.account_table.findMany({
+      where: eq(account_table.ownerId, ctx.auth.userId!),
       orderBy: (accounts, { desc }) => [desc(accounts.name)],
     });
 
-    return accounts ?? null;
+    return accounts;
   }),
 });
