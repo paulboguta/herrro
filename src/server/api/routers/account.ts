@@ -1,26 +1,29 @@
-
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { account_table } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const accountRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(account_table).values({ name: input.name, ownerId: ctx.auth.userId });
+      await ctx.db
+        .insert(account_table)
+        .values({ name: input.name, ownerId: ctx.auth.userId });
       return { success: true };
     }),
 
-  getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    const account = await ctx.db.query.account_table.findFirst({
-      where: eq(account_table.id, input),
-    });
+  getById: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const account = await ctx.db.query.account_table.findFirst({
+        where: eq(account_table.id, input),
+      });
 
-    return account ?? null;
-  }),
+      return account ?? null;
+    }),
 
-  getAll: publicProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({ ctx }) => {
     const accounts = await ctx.db.query.account_table.findMany({
       orderBy: (accounts, { desc }) => [desc(accounts.name)],
     });
@@ -28,4 +31,3 @@ export const accountRouter = createTRPCRouter({
     return accounts ?? null;
   }),
 });
-

@@ -1,11 +1,10 @@
-
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { transaction_table } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         account: z.string().uuid(),
@@ -31,7 +30,7 @@ export const transactionRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  getAll: publicProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.query.transaction_table.findMany({
       orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
     });
@@ -39,13 +38,14 @@ export const transactionRouter = createTRPCRouter({
     return result ?? null;
   }),
 
-  getByAccountId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    const result = await ctx.db.query.transaction_table.findMany({
-      where: eq(transaction_table.account, input),
-      orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
-    });
+  getByAccountId: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db.query.transaction_table.findMany({
+        where: eq(transaction_table.account, input),
+        orderBy: (transactions, { desc }) => [desc(transactions.createdAt)],
+      });
 
-    return result ?? null;
-  }),
+      return result ?? null;
+    }),
 });
-
