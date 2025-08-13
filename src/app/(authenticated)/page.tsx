@@ -6,8 +6,6 @@ import { CreateTransaction } from "./_components/create-transaction";
 export default async function Home() {
   const accounts = await api.account.getAll();
   
-  void api.transaction.getByAccountId.prefetch(accounts[0]!.id);
-
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
