@@ -1,11 +1,19 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
 
 export default function TransactionsContents() {
   const [transactions] = api.transaction.getAllForPeriod.useSuspenseQuery({
-    period: "1w",
+    period: "1y",
   });
 
   const uncategorizedTransactions = transactions.filter(
@@ -17,7 +25,7 @@ export default function TransactionsContents() {
 
   return (
     <div>
-      <Tabs defaultValue="uncategorized">
+      <Tabs defaultValue="uncategorized" className="max-w-4xl">
         <TabsList>
           <TabsTrigger value="uncategorized">
             Uncategorized
@@ -27,22 +35,50 @@ export default function TransactionsContents() {
         </TabsList>
         <TabsContent value="uncategorized">
           <div>
-            {uncategorizedTransactions.map((transaction) => (
-              <div key={transaction.id}>
-                <h1>{transaction.description}</h1>
-                <p>{transaction.amount}</p>
-              </div>
-            ))}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {uncategorizedTransactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
+                    <TableCell>{transaction.description}</TableCell>
+                    <TableCell>{transaction.category}</TableCell>
+                    <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </TabsContent>
         <TabsContent value="categorized">
           <div>
-            {categorizedTransactions.map((transaction) => (
-              <div key={transaction.id}>
-                <h1>{transaction.description}</h1>
-                <p>{transaction.amount}</p>
-              </div>
-            ))}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categorizedTransactions.map((transaction) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
+                    <TableCell>{transaction.description}</TableCell>
+                    <TableCell>{transaction.category}</TableCell>
+                    <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </TabsContent>
       </Tabs>
