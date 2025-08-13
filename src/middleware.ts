@@ -1,6 +1,9 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
 export default clerkMiddleware(async (auth, req) => {
+  if (req.nextUrl.pathname.startsWith('/api/trpc')) {
+    return;
+  }
   if (publicRoutes.includes(req.nextUrl.pathname)) {
     return;
   }
@@ -11,6 +14,8 @@ export default clerkMiddleware(async (auth, req) => {
 const publicRoutes = [
   '/sign-in(.*)',
   '/sign-up(.*)',
+  "/api/trpc(.*)",
+  "/api/(.*)",
 ]
 
 export const config = {
