@@ -46,8 +46,6 @@ export const transactionRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const now = new Date();
-
       if (input.period === "max") {
         const result = await ctx.db.query.transaction_table.findMany({
           where: eq(transaction_table.ownerId, ctx.auth.userId!),
@@ -66,6 +64,7 @@ export const transactionRouter = createTRPCRouter({
 
       const period = periodMap[input.period];
 
+      const now = new Date();
       const d = new Date(now);
       d.setDate(d.getDate() - period);
       const fromDate = d;

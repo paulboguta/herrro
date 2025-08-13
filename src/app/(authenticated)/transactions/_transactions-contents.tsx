@@ -13,7 +13,7 @@ import { api } from "@/trpc/react";
 
 export default function TransactionsContents() {
   const [transactions] = api.transaction.getAllForPeriod.useSuspenseQuery({
-    period: "1y",
+    period: "1m",
   });
 
   const uncategorizedTransactions = transactions.filter(
@@ -74,7 +74,7 @@ export default function TransactionsContents() {
                     <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
                     <TableCell>{transaction.description}</TableCell>
                     <TableCell>{transaction.category}</TableCell>
-                    <TableCell>{transaction.amount} {transaction.currency}</TableCell>
+                    <TableCell>{transaction.amount}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
