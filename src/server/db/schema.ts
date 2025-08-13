@@ -24,7 +24,7 @@ export const transaction_table = pgTable(
     type: d.varchar({ length: 256 }).notNull(),
     amount: d.numeric({ precision: 12, scale: 2 }).notNull(),
     currency: d.varchar({ length: 256 }).notNull().default('USD'),
-    category: d.varchar({ length: 256 }).notNull(),
+    category: d.varchar({ length: 256 }),
     description: d.varchar({ length: 256 }),
     account: d.uuid().references(() => account_table.id, { onDelete: "cascade" }),
     createdAt: d
