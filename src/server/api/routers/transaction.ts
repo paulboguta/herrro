@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { transaction_table } from "@/server/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
@@ -39,11 +39,56 @@ export const transactionRouter = createTRPCRouter({
     return result;
   }),
 
+  getAllForPeriod: protectedProcedure
+    .input(
+      z.object({
+        period: z.enum(["1d", "1w", "1m", "1y", "max"]),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const now = new Date();
+
+      if (input.period === "max") {
+        const result = await ctx.db.query.transaction_table.findMany({
+          where: eq(transaction_table.ownerId, ctx.auth.userId!),
+          orderBy: (transactions, { desc }) => [desc(transactions.date)],
+        });
+        return result;
+      }
+
+      const periodMap = {
+        "1d": 1,
+        "1w": 7,
+        "1m": 30,
+        "1y": 365,
+        max: 0,
+      };
+
+      const period = periodMap[input.period];
+
+      const d = new Date(now);
+      d.setDate(d.getDate() - period);
+      const fromDate = d;
+
+      const result = await ctx.db.query.transaction_table.findMany({
+        where: and(
+          eq(transaction_table.ownerId, ctx.auth.userId!),
+          gte(transaction_table.date, fromDate),
+        ),
+        orderBy: (transactions, { desc }) => [desc(transactions.date)],
+      });
+
+      return result;
+    }),
+
   getByAccountId: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
       const result = await ctx.db.query.transaction_table.findMany({
-        where: and(eq(transaction_table.account, input), eq(transaction_table.ownerId, ctx.auth.userId!)),
+        where: and(
+          eq(transaction_table.account, input),
+          eq(transaction_table.ownerId, ctx.auth.userId!),
+        ),
         orderBy: (transactions, { desc }) => [desc(transactions.date)],
       });
 
