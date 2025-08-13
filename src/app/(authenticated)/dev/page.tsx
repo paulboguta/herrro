@@ -2,6 +2,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { env } from "@/env";
 import { redirect } from "next/navigation";
+import { DevContents } from "./_dev-contents";
 
 export default function Dev() {
   if (env.NODE_ENV !== "development") {
@@ -20,10 +21,7 @@ export default function Dev() {
           Components
         </div>
       </header>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        </div>
-      </div>
+      <DevContents />
     </>
   );
 }
