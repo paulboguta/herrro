@@ -8,8 +8,7 @@ import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarRail
+  SidebarFooter
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "./mode-toggle";
@@ -51,7 +50,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <ModeToggle />
         <NavUser />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }
