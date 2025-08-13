@@ -7,7 +7,7 @@ export default function AccountContents({accountId}: {accountId: string}) {
   const [transactions] = api.transaction.getByAccountId.useSuspenseQuery(accountId);
 
   return (
-    <main className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center">
       {account?.name}
       {
         transactions ?
@@ -18,6 +18,6 @@ export default function AccountContents({accountId}: {accountId: string}) {
             </div>
           )) : <div>No transactions</div>
         }
-    </main>
+    </div>
   );
 }
