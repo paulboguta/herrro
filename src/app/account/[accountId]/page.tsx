@@ -1,4 +1,5 @@
-import { api } from "@/trpc/server";
+import { api, HydrateClient } from "@/trpc/server";
+import AccountContents from "./_account-contents";
 
 export default async function AccountPage({
   params,
@@ -6,22 +7,14 @@ export default async function AccountPage({
   params: Promise<{ accountId: string }>;
 }) {
   const { accountId } = await params;
-
-  const account = await api.account.getById(accountId);
-
-  const transactions = await api.transaction.getByAccountId(accountId);
+  void api.transaction.getByAccountId.prefetch(accountId);
+  void api.account.getById.prefetch(accountId);
 
   return (
+    <HydrateClient>
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      {account?.name}
-      {
-          transactions.map((transaction) => (
-            <div key={transaction.id} className="flex gap-2 max-w-lg w-full justify-between">
-              <div>{transaction.description}</div>
-              <div>{transaction.amount}</div>
-            </div>
-          ))
-        }
+      <AccountContents accountId={accountId} />
     </main>
+    </HydrateClient>
   );
 }

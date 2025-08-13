@@ -4,11 +4,9 @@ import { CreateAccount } from "./_components/create-account";
 import { CreateTransaction } from "./_components/create-transaction";
 
 export default async function Home() {
-  const transactions = await api.transaction.getAll();
-
-  // void api.post.getLatest.prefetch();
-
   const accounts = await api.account.getAll();
+  
+  void api.transaction.getByAccountId.prefetch(accounts[0]!.id);
 
   return (
     <HydrateClient>
@@ -18,14 +16,6 @@ export default async function Home() {
             <div key={account.id} className="flex gap-2 max-w-lg w-full justify-between">
               <div>{account.name}</div>
               <Link href={`/account/${account.id}`}>View</Link>
-            </div>
-          ))
-        }
-        {
-          transactions.map((transaction) => (
-            <div key={transaction.id} className="flex gap-2 max-w-lg w-full justify-between">
-              <div>{transaction.description}</div>
-              <div>{transaction.amount}</div>
             </div>
           ))
         }
