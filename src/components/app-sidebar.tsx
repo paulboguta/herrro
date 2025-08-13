@@ -22,19 +22,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain: [
       {
         title: "Dashboard",
-        url: "#",
+        url: "/",
         icon: Home,
         isActive: isActive("/"),
       },
       {
         title: "Accounts",
-        url: "#",
+        url: "/accounts",
         icon: Banknote,
         isActive: isActive("/accounts"),
       },
       {
         title: "Transactions",
-        url: "#",
+        url: "/transactions",
         icon: CreditCard,
         isActive: isActive("/transactions"),
       },
