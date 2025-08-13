@@ -3,7 +3,9 @@ import { api, HydrateClient } from "@/trpc/server";
 import TransactionsContents from "./_transactions-contents";
 
 export default async function Transactions() {
-  void api.transaction.getAll.prefetch();
+  void api.transaction.getAllForPeriod.prefetch({
+    period: "1w",
+  });
 
   return (
     <HydrateClient>
