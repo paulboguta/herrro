@@ -24,7 +24,7 @@ import { Calendar, Landmark } from "lucide-react";
 export function TransactionToolbar() {
   const [filters, setFilters] = useTransactionFilters();
 
-  const { data } = api.filters.getTransactionFilters.useQuery({
+  const { data, isLoading } = api.filters.getTransactionFilters.useQuery({
     startDate: filters.dateRange.from,
     endDate: filters.dateRange.to,
   });
@@ -37,7 +37,7 @@ export function TransactionToolbar() {
       <div className="flex flex-col gap-10">
         <Tabs
           value={
-            filters.category === "all" ? "uncategorized" : filters.category
+            filters.category
           }
           onValueChange={(value) =>
             setFilters({
@@ -47,11 +47,12 @@ export function TransactionToolbar() {
           }
         >
           <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="categorized">Categorized</TabsTrigger>
             <TabsTrigger value="uncategorized">
               Uncategorized
-              <Badge>{uncategorizedCount}</Badge>
+             {!isLoading && <Badge>{uncategorizedCount}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="categorized">Categorized</TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2">
