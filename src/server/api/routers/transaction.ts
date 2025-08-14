@@ -1,7 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { transaction_table } from "@/server/db/schema";
+import { category_table, transaction_table } from "@/server/db/schema";
 import { startOfMonth } from "date-fns";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
@@ -13,7 +13,7 @@ export const transactionRouter = createTRPCRouter({
         type: z.enum(["income", "expense", "transfer"]),
         amount: z.string().min(1),
         currency: z.string().min(1).default("USD"),
-        category: z.string().min(1),
+        categoryId: z.string().uuid(),
         description: z.string().optional().nullable(),
       }),
     )
@@ -25,7 +25,7 @@ export const transactionRouter = createTRPCRouter({
         type: input.type,
         amount: input.amount,
         currency: input.currency ?? "USD",
-        category: input.category,
+        categoryId: input.categoryId,
         description: input.description ?? null,
       });
       return { success: true };
@@ -57,10 +57,25 @@ export const transactionRouter = createTRPCRouter({
         lte(transaction_table.date, new Date(input.endDate ?? defaultEndDate)),
       ];
 
-      const result = await ctx.db.query.transaction_table.findMany({
-        where: and(...whereConditions),
-        orderBy: (transactions, { desc }) => [desc(transactions.date)],
-      });
+      const result = await ctx.db
+        .select({
+          id: transaction_table.id,
+          ownerId: transaction_table.ownerId,
+          date: transaction_table.date,
+          type: transaction_table.type,
+          amount: transaction_table.amount,
+          currency: transaction_table.currency,
+          categoryId: transaction_table.categoryId,
+          description: transaction_table.description,
+          account: transaction_table.account,
+          createdAt: transaction_table.createdAt,
+          updatedAt: transaction_table.updatedAt,
+          categoryName: category_table.name,
+        })
+        .from(transaction_table)
+        .leftJoin(category_table, eq(transaction_table.categoryId, category_table.id))
+        .where(and(...whereConditions))
+        .orderBy(desc(transaction_table.date));
 
       return result;
     }),

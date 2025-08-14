@@ -30,9 +30,9 @@ export default function TransactionsContents() {
     const categoryMatch = (() => {
       switch (filters.category) {
         case "uncategorized":
-          return transaction.category === null;
+          return transaction.categoryId === null;
         case "categorized":
-          return transaction.category !== null;
+          return transaction.categoryId !== null;
         case "all":
         default:
           return true;
@@ -58,7 +58,7 @@ export default function TransactionsContents() {
             <TableRow key={transaction.id}>
               <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
               <TableCell>{transaction.description}</TableCell>
-              <TableCell>{transaction.category}</TableCell>
+              <TableCell>{transaction.categoryName}</TableCell>
               <TableCell>
                 {transaction.amount} {transaction.currency}
               </TableCell>
