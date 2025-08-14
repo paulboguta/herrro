@@ -18,6 +18,27 @@ const defaultCategories = [
   "Freelance Income",
 ];
 
+// Helper function to generate logo.dev URL
+const getLogoUrl = (domain: string, token: string) => {
+  return `https://img.logo.dev/${domain}?theme=light&format=png&token=${token}`;
+};
+
+// You'll need to set NEXT_PUBLIC_LOGO_DEV_TOKEN in your .env file
+const logoToken = process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN!;
+
+const defaultMerchants = [
+  { name: "Netflix", website: "https://netflix.com", logoUrl: getLogoUrl("netflix.com", logoToken) },
+  { name: "Amazon", website: "https://amazon.com", logoUrl: getLogoUrl("amazon.com", logoToken) },
+  { name: "Starbucks", website: "https://starbucks.com", logoUrl: getLogoUrl("starbucks.com", logoToken) },
+  { name: "Apple", website: "https://apple.com", logoUrl: getLogoUrl("apple.com", logoToken) },
+  { name: "McDonald's", website: "https://mcdonalds.com", logoUrl: getLogoUrl("mcdonalds.com", logoToken) },
+  { name: "Spotify", website: "https://spotify.com", logoUrl: getLogoUrl("spotify.com", logoToken) },
+  { name: "Uber", website: "https://uber.com", logoUrl: getLogoUrl("uber.com", logoToken) },
+  { name: "Target", website: "https://target.com", logoUrl: getLogoUrl("target.com", logoToken) },
+  { name: "Walmart", website: "https://walmart.com", logoUrl: getLogoUrl("walmart.com", logoToken) },
+  { name: "Google", website: "https://google.com", logoUrl: getLogoUrl("google.com", logoToken) },
+];
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -35,6 +56,21 @@ const main = async () => {
       columns: {
         name: f.valuesFromArray({ values: ["Checking", "Savings"] }),
         ownerId: f.default({ defaultValue: ownerId }),
+      },
+    },
+    merchant_table: {
+      count: defaultMerchants.length,
+      columns: {
+        name: f.valuesFromArray({ 
+          values: defaultMerchants.map(m => m.name),
+          isUnique: true,
+        }),
+        website: f.valuesFromArray({ 
+          values: defaultMerchants.map(m => m.website),
+        }),
+        logoUrl: f.valuesFromArray({ 
+          values: defaultMerchants.map(m => m.logoUrl),
+        }),
       },
     },
     category_table: {

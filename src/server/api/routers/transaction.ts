@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { category_table, transaction_table } from "@/server/db/schema";
+import { category_table, merchant_table, transaction_table } from "@/server/db/schema";
 import { startOfMonth } from "date-fns";
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
@@ -71,9 +71,13 @@ export const transactionRouter = createTRPCRouter({
           createdAt: transaction_table.createdAt,
           updatedAt: transaction_table.updatedAt,
           categoryName: category_table.name,
+          merchantName: merchant_table.name,
+          merchantLogoUrl: merchant_table.logoUrl,
+          merchantWebsite: merchant_table.website,
         })
         .from(transaction_table)
         .leftJoin(category_table, eq(transaction_table.categoryId, category_table.id))
+        .leftJoin(merchant_table, eq(transaction_table.merchantId, merchant_table.id))
         .where(and(...whereConditions))
         .orderBy(desc(transaction_table.date));
 

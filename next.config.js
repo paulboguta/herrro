@@ -9,6 +9,17 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "img.logo.dev",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default config;
