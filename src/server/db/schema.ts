@@ -35,3 +35,5 @@ export const transaction_table = pgTable(
   }),
   (t) => [index("account_idx").on(t.account), index("owner_idx").on(t.ownerId)],
 );
+
+export type Transaction = typeof transaction_table.$inferSelect;

@@ -1,9 +1,8 @@
-import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/ui/page-header";
 import { Toolbar } from "@/components/ui/toolbar";
 import { api, HydrateClient } from "@/trpc/server";
-import { PlusIcon } from "lucide-react";
 import { Suspense } from "react";
+import { CreateTransaction } from "../_components/create-transaction";
 import TransactionsContents from "./_transactions-contents";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +17,7 @@ export default function Transactions() {
       <PageHeader title="Transactions" />
       <div className="space-y-4">
         <Toolbar>
-          <Button variant="outline" size="sm">
-            <PlusIcon />
-            Add
-          </Button>
+          <CreateTransaction />
         </Toolbar>
         <Suspense fallback={<div>Loading...</div>}>
           <TransactionsContents />
