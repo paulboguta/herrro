@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { account_table, transaction_table } from "@/server/db/schema";
+import { account_table, category_table, transaction_table } from "@/server/db/schema";
 import { startOfMonth } from "date-fns";
 import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import { z } from "zod";
@@ -16,13 +16,17 @@ export const filtersRouter = createTRPCRouter({
       const defaultStartDate = startOfMonth(new Date()).toISOString();
       const defaultEndDate = new Date().toISOString();
 
-      // Get all user accounts
+      // TODO: Merge into one db query
       const accounts = await ctx.db.query.account_table.findMany({
         where: eq(account_table.ownerId, ctx.auth.userId!),
         orderBy: (accounts, { desc }) => [desc(accounts.name)],
       });
 
-      // Get uncategorized transaction count for the date range
+      const categories = await ctx.db.query.category_table.findMany({
+        where: eq(category_table.ownerId, ctx.auth.userId!),
+        orderBy: (categories, { asc }) => [asc(categories.name)],
+      });
+
       const uncategorizedCount = await ctx.db
         .select()
         .from(transaction_table)
@@ -37,12 +41,13 @@ export const filtersRouter = createTRPCRouter({
               transaction_table.date,
               new Date(input.endDate ?? defaultEndDate),
             ),
-            isNull(transaction_table.category),
+            isNull(transaction_table.categoryId),
           ),
         );
 
       return {
         accounts,
+        categories,
         uncategorizedCount: uncategorizedCount.length,
       };
     }),
