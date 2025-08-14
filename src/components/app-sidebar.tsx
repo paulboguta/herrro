@@ -13,7 +13,6 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
-import { ModeToggle } from "./mode-toggle";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
@@ -52,7 +51,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <ModeToggle />
         <NavUser />
       </SidebarFooter>
     </Sidebar>
