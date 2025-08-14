@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTransactionFilters } from "@/hooks/use-transaction-filters";
+import { useTransactionFilters, categoryNameToKebab } from "@/hooks/use-transaction-filters";
 import { api } from "@/trpc/react";
 
 export default function TransactionsContents() {
@@ -39,7 +39,12 @@ export default function TransactionsContents() {
       }
     })();
 
-    return accountMatch && categoryMatch;
+    // Filter by specific category name
+    const categoryNameMatch =
+      filters.categoryName === "all" ||
+      (transaction.categoryName && categoryNameToKebab(transaction.categoryName) === filters.categoryName);
+
+    return accountMatch && categoryMatch && categoryNameMatch;
   });
 
   return (

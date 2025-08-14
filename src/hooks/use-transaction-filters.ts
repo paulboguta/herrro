@@ -12,6 +12,7 @@ export type TransactionFilters = {
   category: TransactionCategory
   dateRange: URLDateRange
   account: string
+  categoryName: string
 }
 
 const getDefaultDateRange = (): URLDateRange => ({
@@ -30,10 +31,22 @@ const parseAsDateRange = parseAsJson<URLDateRange>((value: unknown): URLDateRang
   return getDefaultDateRange()
 }).withDefault(getDefaultDateRange())
 
+// Utility functions for category name conversion
+export const categoryNameToKebab = (name: string): string => {
+  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+};
+
+export const kebabToCategoryName = (kebab: string): string => {
+  return kebab.split('-').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+};
+
 export function useTransactionFilters() {
   return useQueryStates({
     category: parseAsStringEnum<TransactionCategory>(['all', 'uncategorized', 'categorized']).withDefault('all'),
     dateRange: parseAsDateRange,
     account: parseAsStringEnum<string>(['all']).withDefault('all'),
+    categoryName: parseAsStringEnum<string>(['all']).withDefault('all'),
   })
 }

@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toolbar } from "@/components/ui/toolbar";
-import { useTransactionFilters } from "@/hooks/use-transaction-filters";
+import { categoryNameToKebab, kebabToCategoryName, useTransactionFilters } from "@/hooks/use-transaction-filters";
 import { formatDateRangeForDisplay } from "@/lib/dates";
 import { api } from "@/trpc/react";
-import { Calendar, Landmark } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 export function TransactionToolbar() {
   const [filters, setFilters] = useTransactionFilters();
@@ -30,6 +30,7 @@ export function TransactionToolbar() {
   });
 
   const accounts = data?.accounts ?? [];
+  const categories = data?.categories ?? [];
   const uncategorizedCount = data?.uncategorizedCount ?? 0;
 
   return (
@@ -82,7 +83,6 @@ export function TransactionToolbar() {
             <SelectTriggerSimple asChild>
               <FilterButton
                 label="Account"
-                icon={Landmark}
                 active={filters.account !== "all"}
                 value={
                   filters.account === "all"
@@ -97,6 +97,30 @@ export function TransactionToolbar() {
               {accounts.map((account) => (
                 <SelectItem key={account.id} value={account.id}>
                   {account.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.categoryName}
+            onValueChange={(categoryName) => setFilters({ ...filters, categoryName })}
+          >
+            <SelectTriggerSimple asChild>
+              <FilterButton
+                label="Category"
+                active={filters.categoryName !== "all"}
+                value={
+                  filters.categoryName === "all"
+                    ? "All categories"
+                    : kebabToCategoryName(filters.categoryName)
+                }
+              />
+            </SelectTriggerSimple>
+            <SelectContent>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={categoryNameToKebab(category.name)}>
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>
