@@ -21,15 +21,21 @@ export default function TransactionsContents() {
 
   // Client-side filtering
   const filteredTransactions = transactions.filter((transaction) => {
-    switch (filters.category) {
-      case 'uncategorized':
-        return transaction.category === null;
-      case 'categorized':
-        return transaction.category !== null;
-      case 'all':
-      default:
-        return true;
-    }
+    const accountMatch = filters.account === 'all' || transaction.account === filters.account;
+    
+    const categoryMatch = (() => {
+      switch (filters.category) {
+        case 'uncategorized':
+          return transaction.category === null;
+        case 'categorized':
+          return transaction.category !== null;
+        case 'all':
+        default:
+          return true;
+      }
+    })();
+    
+    return accountMatch && categoryMatch;
   });
 
   return (
