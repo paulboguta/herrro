@@ -1,5 +1,7 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   startOfMonth,
   startOfYear,
@@ -10,8 +12,8 @@ import {
 import { useState } from "react"
 import { type DateRange } from "react-day-picker"
 
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+export type ISODateRange = { from?: string, to?: string }
+
 
 type DateOption = {
   label: string;
@@ -50,9 +52,9 @@ const getDefaultOptions = (): DateOption[] => {
 };
 
 type DateRangePickerProps = {
-  defaultDateRange?: DateRange;
-  onChange?: (dateRange: DateRange) => void;
-  value?: DateRange;
+  defaultDateRange?: ISODateRange;
+  onChange?: (dateRange: ISODateRange) => void;
+  value?: ISODateRange;
 }
 
 export default function DateRangePicker({
@@ -64,12 +66,26 @@ export default function DateRangePicker({
   const options = getDefaultOptions();
   const [month, setMonth] = useState(today);
   
-  // Use controlled value or fallback to defaultDateRange or default option
-  const currentDateRange = value ?? defaultDateRange ?? (options[1]?.value as DateRange);
+  const convertISOToDateRange = (isoRange?: ISODateRange): DateRange => {
+    if (!isoRange) return { from: undefined, to: undefined };
+    return {
+      from: isoRange.from ? new Date(isoRange.from) : undefined,
+      to: isoRange.to ? new Date(isoRange.to) : undefined,
+    };
+  };
+
+  const convertDateRangeToISO = (dateRange: DateRange): ISODateRange => {
+    return {
+      from: dateRange.from?.toISOString(),
+      to: dateRange.to?.toISOString(),
+    };
+  };
+
+  const currentDateRange = convertISOToDateRange(value ?? defaultDateRange) ?? (options[1]?.value as DateRange);
 
   const handleOptionClick = (option: DateOption) => {
     const range = option.value as DateRange;
-    onChange?.(range);
+    onChange?.(convertDateRangeToISO(range));
     if (range.to) {
       setMonth(range.to);
     }
@@ -77,7 +93,7 @@ export default function DateRangePicker({
 
   const handleCalendarSelect = (newDate: DateRange | undefined) => {
     if (newDate) {
-      onChange?.(newDate);
+      onChange?.(convertDateRangeToISO(newDate));
     }
   };
 

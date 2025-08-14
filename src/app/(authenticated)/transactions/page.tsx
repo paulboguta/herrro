@@ -1,24 +1,23 @@
 import PageHeader from "@/components/ui/page-header";
-import { Toolbar } from "@/components/ui/toolbar";
 import { api, HydrateClient } from "@/trpc/server";
+import { startOfMonth } from "date-fns";
 import { Suspense } from "react";
-import { CreateTransaction } from "../_components/create-transaction";
+import { TransactionToolbar } from "./_toolbar";
 import TransactionsContents from "./_transactions-contents";
 
 export const dynamic = "force-dynamic";
 
 export default function Transactions() {
-  void api.transaction.getAllForPeriod.prefetch({
-    period: "1m", // prefetch transactions for the last month
+  void api.transaction.getAllWithFilters.prefetch({
+    startDate: startOfMonth(new Date()).toISOString(),
+    endDate: new Date().toISOString(),
   });
 
   return (
     <HydrateClient>
       <PageHeader title="Transactions" />
       <div className="space-y-4">
-        <Toolbar>
-          <CreateTransaction />
-        </Toolbar>
+        <TransactionToolbar />
         <Suspense fallback={<div>Loading...</div>}>
           <TransactionsContents />
         </Suspense>

@@ -1,6 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { transaction_table } from "@/server/db/schema";
-import { and, eq, gte } from "drizzle-orm";
+import { startOfMonth } from "date-fns";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
@@ -39,41 +40,25 @@ export const transactionRouter = createTRPCRouter({
     return result;
   }),
 
-  getAllForPeriod: protectedProcedure
+  getAllWithFilters: protectedProcedure
     .input(
       z.object({
-        period: z.enum(["1d", "1w", "1m", "1y", "max"]),
-      }),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+    }),
     )
     .query(async ({ ctx, input }) => {
-      if (input.period === "max") {
-        const result = await ctx.db.query.transaction_table.findMany({
-          where: eq(transaction_table.ownerId, ctx.auth.userId!),
-          orderBy: (transactions, { desc }) => [desc(transactions.date)],
-        });
-        return result;
-      }
-
-      const periodMap = {
-        "1d": 1,
-        "1w": 7,
-        "1m": 30,
-        "1y": 365,
-        max: 0,
-      };
-
-      const period = periodMap[input.period];
-
-      const now = new Date();
-      const d = new Date(now);
-      d.setDate(d.getDate() - period);
-      const fromDate = d;
+      const defaultStartDate = startOfMonth(new Date()).toISOString();
+      const defaultEndDate = new Date().toISOString();
+      
+      const whereConditions = [
+        eq(transaction_table.ownerId, ctx.auth.userId!),
+        gte(transaction_table.date, new Date(input.startDate ?? defaultStartDate)),
+        lte(transaction_table.date, new Date(input.endDate ?? defaultEndDate)),
+      ];
 
       const result = await ctx.db.query.transaction_table.findMany({
-        where: and(
-          eq(transaction_table.ownerId, ctx.auth.userId!),
-          gte(transaction_table.date, fromDate),
-        ),
+        where: and(...whereConditions),
         orderBy: (transactions, { desc }) => [desc(transactions.date)],
       });
 
