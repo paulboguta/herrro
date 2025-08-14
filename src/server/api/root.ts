@@ -1,5 +1,6 @@
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { accountRouter } from "./routers/account";
+import { filtersRouter } from "./routers/filters";
 import { transactionRouter } from "./routers/transaction";
 
 /**
@@ -10,6 +11,7 @@ import { transactionRouter } from "./routers/transaction";
 export const appRouter = createTRPCRouter({
   transaction: transactionRouter,
   account: accountRouter,
+  filters: filtersRouter,
 });
 
 // export type definition of API

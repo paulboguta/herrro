@@ -24,18 +24,13 @@ import { Calendar, Landmark } from "lucide-react";
 export function TransactionToolbar() {
   const [filters, setFilters] = useTransactionFilters();
 
-  const [accounts] = api.account.getAll.useSuspenseQuery();
-
-  const [transactions] = api.transaction.getAllWithFilters.useSuspenseQuery({
+  const { data } = api.filters.getTransactionFilters.useQuery({
     startDate: filters.dateRange.from,
     endDate: filters.dateRange.to,
   });
 
-  const uncategorizedCount = transactions.filter(
-    (transaction) =>
-      transaction.category === null &&
-      (filters.account === "all" || transaction.account === filters.account),
-  ).length;
+  const accounts = data?.accounts ?? [];
+  const uncategorizedCount = data?.uncategorizedCount ?? 0;
 
   return (
     <Toolbar>
