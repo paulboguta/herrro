@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "@/styles/theme-provider";
 import { TRPCReactProvider } from "@/trpc/react";
 import { ClerkProvider } from "@clerk/nextjs";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -31,7 +32,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <TRPCReactProvider>
+              <NuqsAdapter>{children}</NuqsAdapter>
+            </TRPCReactProvider>
           </ThemeProvider>
         </body>
       </html>
