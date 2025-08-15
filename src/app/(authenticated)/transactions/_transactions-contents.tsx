@@ -7,9 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { categoryNameToKebab, useTransactionFilters } from "@/hooks/use-transaction-filters";
+import { useTransactionFilters, categoryNameToKebab } from "@/hooks/use-transaction-filters";
 import { api } from "@/trpc/react";
-import Image from "next/image";
 
 export default function TransactionsContents() {
   const [filters] = useTransactionFilters();
@@ -50,11 +49,11 @@ export default function TransactionsContents() {
 
   return (
     <div>
-      <Table className="max-w-3xl">
+      <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
-            <TableHead>Merchant</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Amount</TableHead>
           </TableRow>
@@ -63,15 +62,7 @@ export default function TransactionsContents() {
           {filteredTransactions.map((transaction) => (
             <TableRow key={transaction.id}>
               <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
-              <TableCell>
-                <Image
-                  className="rounded-full"
-                  src={transaction.merchantLogoUrl ?? ""}
-                  alt={transaction.merchantName ?? ""}
-                  width={24}
-                  height={24}
-                />
-              </TableCell>
+              <TableCell>{transaction.description}</TableCell>
               <TableCell>{transaction.categoryName}</TableCell>
               <TableCell>
                 {transaction.amount} {transaction.currency}
