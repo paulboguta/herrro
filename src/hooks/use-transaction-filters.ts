@@ -1,6 +1,6 @@
 'use client'
 
-import { startOfMonth } from 'date-fns'
+import { format, startOfMonth } from 'date-fns'
 import { parseAsJson, parseAsStringEnum, useQueryStates } from 'nuqs'
 
 
@@ -17,16 +17,16 @@ export type TransactionFilters = {
 }
 
 const getDefaultDateRange = (): URLDateRange => ({
-  from: startOfMonth(new Date()).toISOString(),
-  to: new Date().toISOString(),
+  from: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+  to: format(new Date(), 'yyyy-MM-dd'),
 })
 
 const parseAsDateRange = parseAsJson<URLDateRange>((value: unknown): URLDateRange => {
   if (typeof value === 'object' && value !== null && 'from' in value && 'to' in value) {
     const obj = value as Record<string, unknown>
     return {
-      from: obj.from ? (obj.from as string) : undefined,
-      to: obj.to ? (obj.to as string) : undefined,
+      from: obj.from ? (obj.from as string).split('T')[0] : undefined,
+      to: obj.to ? (obj.to as string).split('T')[0] : undefined,
     }
   }
   return getDefaultDateRange()

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
+  format,
   startOfMonth,
   startOfYear,
   subDays,
@@ -76,8 +77,8 @@ export default function DateRangePicker({
 
   const convertDateRangeToISO = (dateRange: DateRange): ISODateRange => {
     return {
-      from: dateRange.from?.toISOString(),
-      to: dateRange.to?.toISOString(),
+      from: dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+      to: dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
     };
   };
 
