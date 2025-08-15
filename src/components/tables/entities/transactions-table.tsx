@@ -80,7 +80,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
         columns={columns}
         enableSorting={true}
         enableFiltering={true}
-        pageSize={20}
+        pageSize={15}
       />
       {editingTransaction && (
         <EditTransaction 
