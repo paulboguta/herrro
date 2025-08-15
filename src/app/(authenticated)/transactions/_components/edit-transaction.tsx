@@ -43,6 +43,7 @@ export function EditTransaction({
   onOpenChange
 }: EditTransactionProps) {
   const { data: accounts } = api.account.getAll.useQuery();
+  const { data: categories } = api.category.getAll.useQuery();
   const utils = api.useUtils();
 
   const {
@@ -167,12 +168,19 @@ export function EditTransaction({
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="categoryId" className="text-sm font-medium">Category ID</label>
-            <Input
+            <label htmlFor="categoryId" className="text-sm font-medium">Category</label>
+            <select
               id="categoryId"
-              placeholder="Category ID"
               {...register("categoryId")}
-            />
+              className="rounded-md border px-3 py-2"
+            >
+              <option value="">Select category</option>
+              {categories?.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
             {errors.categoryId && (
               <p className="text-sm text-red-600">{errors.categoryId.message}</p>
             )}
