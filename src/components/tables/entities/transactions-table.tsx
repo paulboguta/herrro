@@ -9,6 +9,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { Transaction } from "@/server/db/schema";
 import type { ColumnDef } from "@tanstack/react-table";
 import { EditIcon } from "lucide-react";
+import { useState } from "react";
 import { DataTable } from "../base/data-table";
 
 type TransactionWithCategoryName = Transaction & {
@@ -25,6 +26,8 @@ interface TransactionsTableProps {
 
 
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  
   const processedTransactions: ProcessedTransaction[] = transactions.map(transaction => ({
     ...transaction,
     amount: parseFloat(transaction.amount),
@@ -55,12 +58,10 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
             };
             
             return (
-              <EditTransaction transaction={originalTransaction}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <EditIcon className="mr-2 h-4 w-4" />
-                  Edit transaction
-                </DropdownMenuItem>
-              </EditTransaction>
+              <DropdownMenuItem onSelect={() => setEditingTransaction(originalTransaction)}>
+                <EditIcon className="mr-2 h-4 w-4" />
+                Edit transaction
+              </DropdownMenuItem>
             );
           }
         }
@@ -70,12 +71,21 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
   ];
 
   return (
-    <DataTable
-      data={processedTransactions}
-      columns={columns}
-      enableSorting={true}
-      enableFiltering={true}
-      pageSize={20}
-    />
+    <>
+      <DataTable
+        data={processedTransactions}
+        columns={columns}
+        enableSorting={true}
+        enableFiltering={true}
+        pageSize={20}
+      />
+      {editingTransaction && (
+        <EditTransaction 
+          transaction={editingTransaction}
+          open={!!editingTransaction}
+          onOpenChange={(open) => !open && setEditingTransaction(null)}
+        />
+      )}
+    </>
   );
 }

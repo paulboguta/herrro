@@ -28,15 +28,19 @@ const editTransactionSchema = z.object({
 type EditTransactionForm = z.infer<typeof editTransactionSchema>;
 
 interface EditTransactionProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   transaction: Transaction;
   onSuccess?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function EditTransaction({ 
   children, 
   transaction, 
-  onSuccess 
+  onSuccess,
+  open,
+  onOpenChange
 }: EditTransactionProps) {
   const { data: accounts } = api.account.getAll.useQuery();
   const utils = api.useUtils();
@@ -63,6 +67,7 @@ export function EditTransaction({
     onSuccess: async () => {
       await utils.transaction.invalidate();
       onSuccess?.();
+      onOpenChange?.(false);
       reset();
     },
   });
@@ -77,11 +82,13 @@ export function EditTransaction({
 
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        {children}
-      </SheetTrigger>
-      <SheetContent showOverlay={false}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      {children && (
+        <SheetTrigger asChild>
+          {children}
+        </SheetTrigger>
+      )}
+      <SheetContent showOverlay={true}>
         <SheetHeader>
           <SheetTitle>Edit Transaction</SheetTitle>
         </SheetHeader>
