@@ -1,5 +1,4 @@
 import type { DateOptions } from "@/components/tables/base/types";
-import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 
@@ -7,19 +6,19 @@ export function createDateColumn<TData>(
   accessorKey: keyof TData,
   options: DateOptions = {}
 ): ColumnDef<TData> {
-  const { format = "short", relative = false } = options;
+  const { format = "short", relative = false, size = 130 } = options;
 
   return {
     accessorKey: accessorKey as string,
+    size,
     header: ({ column }) => (
-      <Button
-        variant="ghost"
+      <div 
+        className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="h-auto p-0 font-medium"
       >
         Date
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
+        <ArrowUpDown className="h-4 w-4" />
+      </div>
     ),
     cell: ({ getValue }) => {
       const date = getValue() as Date;
@@ -35,7 +34,7 @@ export function createDateColumn<TData>(
       }
 
       return (
-        <div className="font-medium">
+        <div className="font-normal text-foreground">
           {date.toLocaleDateString("en-US", {
             dateStyle: format as "short" | "medium" | "long",
           })}

@@ -1,5 +1,4 @@
 import type { CurrencyOptions } from "@/components/tables/base/types";
-import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 
@@ -7,19 +6,19 @@ export function createCurrencyColumn<TData>(
   accessorKey: keyof TData,
   options: CurrencyOptions = {}
 ): ColumnDef<TData> {
-  const { currency = "USD", showSymbol = true, precision = 2 } = options;
+  const { currency = "USD", showSymbol = false, precision = 2, size = 160 } = options;
 
   return {
     accessorKey: accessorKey as string,
+    size,
     header: ({ column }) => (
-      <Button
-        variant="ghost"
+      <div 
+        className="flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        className="h-auto p-0 font-medium"
       >
         Amount
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
+        <ArrowUpDown className="h-4 w-4" />
+      </div>
     ),
     cell: ({ getValue }) => {
       const amount = getValue() as number;
@@ -31,7 +30,7 @@ export function createCurrencyColumn<TData>(
       }).format(amount);
 
       return (
-        <div className={`text-right font-mono ${amount < 0 ? "text-red-600" : ""}`}>
+        <div className={`text-left font-normal ${amount < 0 ? "text-red-600" : "text-foreground"}`}>
           {formatted} {showSymbol && currency}
         </div>
       );

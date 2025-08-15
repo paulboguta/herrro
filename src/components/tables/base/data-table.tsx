@@ -71,8 +71,8 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-full">
-      <div className="rounded-md border">
+    <div className="w-fit">
+      <div className="border border-muted/50 rounded-lg overflow-hidden">
         <Table
           // shadcn fixed table width fix
           {...{

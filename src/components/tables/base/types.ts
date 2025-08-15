@@ -16,23 +16,27 @@ export interface FinancialTableProps<TData> extends TableConfig<TData> {
   enableExport?: boolean;
 }
 
-export interface CurrencyOptions {
+export interface BaseColumnOptions {
+  size?: number;
+}
+
+export interface CurrencyOptions extends BaseColumnOptions {
   currency?: string;
   showSymbol?: boolean;
   precision?: number;
 }
 
-export interface DateOptions {
+export interface DateOptions extends BaseColumnOptions {
   format?: string;
   relative?: boolean;
 }
 
-export interface CategoryOptions {
+export interface CategoryOptions extends BaseColumnOptions {
   showBadge?: boolean;
   colorMapping?: Record<string, string>;
 }
 
-export interface ActionsOptions<TData> {
+export interface ActionsOptions<TData> extends BaseColumnOptions {
   onEdit?: (row: TData) => void;
   onDelete?: (row: TData) => void;
   onDuplicate?: (row: TData) => void;
