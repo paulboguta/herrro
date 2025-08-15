@@ -30,7 +30,13 @@ export function createCurrencyColumn<TData>(
       }).format(amount);
 
       return (
-        <div className={`text-left font-normal ${amount < 0 ? "text-red-600" : "text-foreground"}`}>
+        <div className={`text-left font-normal ${
+          amount < 0 
+            ? "text-red-600 dark:text-red-400" 
+            : amount > 0 
+              ? "text-green-600 dark:text-green-400" 
+              : "text-foreground"
+        }`}>
           {formatted} {showSymbol && currency}
         </div>
       );

@@ -28,10 +28,13 @@ interface TransactionsTableProps {
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
-  const processedTransactions: ProcessedTransaction[] = transactions.map(transaction => ({
-    ...transaction,
-    amount: parseFloat(transaction.amount),
-  }));
+  const processedTransactions: ProcessedTransaction[] = transactions.map(transaction => {
+    const amount = parseFloat(transaction.amount);
+    return {
+      ...transaction,
+      amount: transaction.type === 'expense' ? -amount : amount,
+    };
+  });
 
   const columns: ColumnDef<ProcessedTransaction>[] = [
     createDateColumn("date", { size: 120 }),
