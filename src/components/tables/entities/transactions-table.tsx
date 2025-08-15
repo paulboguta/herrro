@@ -1,5 +1,6 @@
 "use client";
 
+import { EditTransaction } from "@/app/(authenticated)/transactions/_components/edit-transaction";
 import { createCategoryColumn } from "@/components/tables/columns/category-column";
 import { createCurrencyColumn } from "@/components/tables/columns/currency-column";
 import { createDateColumn } from "@/components/tables/columns/date-column";
@@ -14,7 +15,6 @@ import type { Transaction } from "@/server/db/schema";
 import type { ColumnDef } from "@tanstack/react-table";
 import { EditIcon, MoreHorizontalIcon } from "lucide-react";
 import { DataTable } from "../base/data-table";
-import { EditTransaction } from "@/app/(authenticated)/transactions/_components/edit-transaction";
 
 type TransactionWithCategoryName = Transaction & {
   categoryName: string | null;
@@ -42,7 +42,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
       header: "Description",
       cell: ({ getValue }) => {
         const description = getValue() as string | null;
-        return <div className="font-medium">{description ?? "—"}</div>;
+        return <div className="font-medium truncate">{description ?? "—"}</div>;
       },
     },
     createCategoryColumn("categoryName"),
