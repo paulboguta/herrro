@@ -1,3 +1,4 @@
+import { DataTableSkeleton } from "@/components/tables/base/data-table-skeleton";
 import PageHeader from "@/components/ui/page-header";
 import { api, HydrateClient } from "@/trpc/server";
 import { startOfMonth } from "date-fns";
@@ -18,7 +19,7 @@ export default function Transactions() {
       <PageHeader title="Transactions" />
       <div className="space-y-4">
         <TransactionToolbar />
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<DataTableSkeleton columns={[120, 140, 150, 320, 20]} rows={5} />}>
           <TransactionsContents />
         </Suspense>
       </div>

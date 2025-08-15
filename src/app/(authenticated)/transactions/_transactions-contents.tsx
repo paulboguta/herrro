@@ -11,10 +11,6 @@ export default function TransactionsContents() {
     endDate: filters.dateRange.to,
   });
 
-  if (!transactions) {
-    return <div>Loading 2...</div>;
-  }
-
   // Client-side filtering (later we should move most to the server side filtering)
   const filteredTransactions = transactions?.filter((transaction) => {
     const accountMatch =
