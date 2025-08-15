@@ -80,6 +80,15 @@ export const transactionRouter = createTRPCRouter({
       return result;
     }),
 
+  updateCategory: protectedProcedure
+    .input(z.object({
+      id: z.string().uuid(),
+      categoryId: z.string().uuid(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.update(transaction_table).set({ categoryId: input.categoryId }).where(eq(transaction_table.id, input.id));
+    }),
+
   getByAccountId: protectedProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
