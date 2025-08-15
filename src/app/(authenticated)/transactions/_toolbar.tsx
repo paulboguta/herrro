@@ -14,6 +14,7 @@ import {
   SelectItem,
   SelectTriggerSimple,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toolbar } from "@/components/ui/toolbar";
 import { categoryNameToKebab, kebabToCategoryName, useTransactionFilters } from "@/hooks/use-transaction-filters";
@@ -24,14 +25,14 @@ import { Calendar } from "lucide-react";
 export function TransactionToolbar() {
   const [filters, setFilters] = useTransactionFilters();
 
-  const { data, isLoading } = api.filters.getTransactionFilters.useQuery({
+  const { data: accounts, isLoading: accountsLoading } = api.account.getAll.useQuery();
+  const { data: categories, isLoading: categoriesLoading } = api.category.getAll.useQuery();
+  const { data: uncategorizedCount, isLoading: uncategorizedCountLoading } = api.transaction.getUncategorizedCount.useQuery({
     startDate: filters.dateRange.from,
     endDate: filters.dateRange.to,
   });
 
-  const accounts = data?.accounts ?? [];
-  const categories = data?.categories ?? [];
-  const uncategorizedCount = data?.uncategorizedCount ?? 0;
+  const isLoading = accountsLoading || categoriesLoading || uncategorizedCountLoading;
 
   return (
     <Toolbar>
@@ -52,7 +53,7 @@ export function TransactionToolbar() {
             <TabsTrigger value="categorized">Categorized</TabsTrigger>
             <TabsTrigger value="uncategorized">
               Uncategorized
-             {!isLoading && <Badge>{uncategorizedCount}</Badge>}
+              {isLoading ? <Skeleton className="size-5 rounded" /> : <Badge>{uncategorizedCount}</Badge>}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -87,14 +88,14 @@ export function TransactionToolbar() {
                 value={
                   filters.account === "all"
                     ? "All accounts"
-                    : (accounts.find((a) => a.id === filters.account)?.name ??
+                    : (accounts?.find((a) => a.id === filters.account)?.name ??
                       "Unknown")
                 }
               />
             </SelectTriggerSimple>
             <SelectContent>
               <SelectItem value="all">All accounts</SelectItem>
-              {accounts.map((account) => (
+              {accounts?.map((account) => (
                 <SelectItem key={account.id} value={account.id}>
                   {account.name}
                 </SelectItem>
@@ -118,7 +119,7 @@ export function TransactionToolbar() {
             </SelectTriggerSimple>
             <SelectContent>
               <SelectItem value="all">All categories</SelectItem>
-              {categories.map((category) => (
+              {categories?.map((category) => (
                 <SelectItem key={category.id} value={categoryNameToKebab(category.name)}>
                   {category.name}
                 </SelectItem>

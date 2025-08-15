@@ -1,7 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { category_table, transaction_table } from "@/server/db/schema";
 import { startOfMonth } from "date-fns";
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNull, lte } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionRouter = createTRPCRouter({
@@ -78,6 +78,59 @@ export const transactionRouter = createTRPCRouter({
         .orderBy(desc(transaction_table.date));
 
       return result;
+    }),
+
+  // For now this is always used with filters (period)
+  getUncategorizedCount: protectedProcedure.input(z.object({
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+  })).query(async ({ ctx, input }) => {
+    const defaultStartDate = startOfMonth(new Date()).toISOString();
+    const defaultEndDate = new Date().toISOString();
+
+    const result = await ctx.db.select({ count: count() }).from(transaction_table).where(and(
+      eq(transaction_table.ownerId, ctx.auth.userId!),
+      isNull(transaction_table.categoryId),
+      gte(transaction_table.date, new Date(input.startDate ?? defaultStartDate)),
+      lte(transaction_table.date, new Date(input.endDate ?? defaultEndDate)),
+    ));
+    return result[0]?.count ?? 0;
+  }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        account: z.string().uuid().optional(),
+        date: z.string().min(1).optional(),
+        type: z.enum(["income", "expense", "transfer"]).optional(),
+        amount: z.string().min(1).optional(),
+        currency: z.string().min(1).optional(),
+        categoryId: z.string().uuid().optional(),
+        description: z.string().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...updateData } = input;
+      const dataToUpdate: Record<string, unknown> = {};
+      
+      if (updateData.account !== undefined) dataToUpdate.account = updateData.account;
+      if (updateData.date !== undefined) dataToUpdate.date = new Date(updateData.date);
+      if (updateData.type !== undefined) dataToUpdate.type = updateData.type;
+      if (updateData.amount !== undefined) dataToUpdate.amount = updateData.amount;
+      if (updateData.currency !== undefined) dataToUpdate.currency = updateData.currency;
+      if (updateData.categoryId !== undefined) dataToUpdate.categoryId = updateData.categoryId;
+      if (updateData.description !== undefined) dataToUpdate.description = updateData.description;
+
+      await ctx.db
+        .update(transaction_table)
+        .set(dataToUpdate)
+        .where(and(
+          eq(transaction_table.id, id),
+          eq(transaction_table.ownerId, ctx.auth.userId!)
+        ));
+      
+      return { success: true };
     }),
 
   updateCategory: protectedProcedure
