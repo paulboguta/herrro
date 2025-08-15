@@ -1,14 +1,7 @@
 "use client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useTransactionFilters, categoryNameToKebab } from "@/hooks/use-transaction-filters";
+import { categoryNameToKebab, useTransactionFilters } from "@/hooks/use-transaction-filters";
 import { api } from "@/trpc/react";
+import { TransactionsTable } from "@/components/tables/entities/transactions-table";
 
 export default function TransactionsContents() {
   const [filters] = useTransactionFilters();
@@ -47,30 +40,5 @@ export default function TransactionsContents() {
     return accountMatch && categoryMatch && categoryNameMatch;
   });
 
-  return (
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredTransactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
-              <TableCell>{transaction.description}</TableCell>
-              <TableCell>{transaction.categoryName}</TableCell>
-              <TableCell>
-                {transaction.amount} {transaction.currency}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
+  return <TransactionsTable transactions={filteredTransactions} />;
 }

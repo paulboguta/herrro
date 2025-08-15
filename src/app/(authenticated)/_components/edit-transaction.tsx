@@ -81,7 +81,7 @@ export function EditTransaction({
             className="rounded-md border px-3 py-2"
             placeholder="Category"
             required
-            defaultValue={transaction.category ?? ""}
+            defaultValue={transaction.categoryId ?? ""}
           />
           <input
             name="description"

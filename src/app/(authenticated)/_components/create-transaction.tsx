@@ -30,12 +30,12 @@ export async function CreateTransaction() {
     const type = getStr("type");
     const amount = getStr("amount");
     const currency = getStr("currency", "USD");
-    const category = getStr("category");
+    const categoryId = getStr("categoryId");
     const descVal = formData.get("description");
     const description =
       typeof descVal === "string" && descVal.length > 0 ? descVal : null;
 
-    if (!account || !date || !type || !amount || !category) return;
+    if (!account || !date || !type || !amount || !categoryId) return;
 
     await api.transaction.create({
       account,
@@ -43,7 +43,7 @@ export async function CreateTransaction() {
       type: type as "income" | "expense" | "transfer",
       amount,
       currency,
-      category,
+      categoryId,
       description,
     });
 
@@ -104,7 +104,7 @@ export async function CreateTransaction() {
             placeholder="USD"
           />
           <input
-            name="category"
+            name="categoryId"
             type="text"
             className="rounded-md border px-3 py-2"
             placeholder="Category"
