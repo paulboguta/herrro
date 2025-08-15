@@ -1,7 +1,7 @@
 "use client";
+import { TransactionsTable } from "@/components/tables/entities/transactions-table";
 import { categoryNameToKebab, useTransactionFilters } from "@/hooks/use-transaction-filters";
 import { api } from "@/trpc/react";
-import { TransactionsTable } from "@/components/tables/entities/transactions-table";
 
 export default function TransactionsContents() {
   const [filters] = useTransactionFilters();
@@ -15,7 +15,7 @@ export default function TransactionsContents() {
     return <div>Loading 2...</div>;
   }
 
-  // Client-side filtering
+  // Client-side filtering (later we should move most to the server side filtering)
   const filteredTransactions = transactions?.filter((transaction) => {
     const accountMatch =
       filters.account === "all" || transaction.account === filters.account;
@@ -37,7 +37,11 @@ export default function TransactionsContents() {
       filters.categoryName === "all" ||
       (transaction.categoryName && categoryNameToKebab(transaction.categoryName) === filters.categoryName);
 
-    return accountMatch && categoryMatch && categoryNameMatch;
+    // Filter by transaction type
+    const typeMatch =
+      filters.type === "all" || transaction.type === filters.type;
+
+    return accountMatch && categoryMatch && categoryNameMatch && typeMatch;
   });
 
   return <TransactionsTable transactions={filteredTransactions} />;

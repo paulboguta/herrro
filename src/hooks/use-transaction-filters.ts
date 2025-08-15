@@ -13,6 +13,7 @@ export type TransactionFilters = {
   dateRange: URLDateRange
   account: string
   categoryName: string
+  type: string
 }
 
 const getDefaultDateRange = (): URLDateRange => ({
@@ -48,5 +49,6 @@ export function useTransactionFilters() {
     dateRange: parseAsDateRange,
     account: parseAsStringEnum<string>(['all']).withDefault('all'),
     categoryName: parseAsStringEnum<string>(['all']).withDefault('all'),
+    type: parseAsStringEnum<string>(['all', 'income', 'expense', 'transfer']).withDefault('all'),
   })
 }

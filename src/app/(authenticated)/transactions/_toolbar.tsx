@@ -126,6 +126,28 @@ export function TransactionToolbar() {
               ))}
             </SelectContent>
           </Select>
+          <Select
+            value={filters.type}
+            onValueChange={(type) => setFilters({ ...filters, type })}
+          >
+            <SelectTriggerSimple asChild>
+              <FilterButton
+                label="Type"
+                active={filters.type !== "all"}
+                value={
+                  filters.type === "all"
+                    ? "All types"
+                    : filters.type.charAt(0).toUpperCase() + filters.type.slice(1)
+                }
+              />
+            </SelectTriggerSimple>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+              <SelectItem value="transfer">Transfer</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </Toolbar>
