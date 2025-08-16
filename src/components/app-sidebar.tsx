@@ -1,6 +1,6 @@
 "use client";
 
-import { Banknote, CreditCard, Home } from "lucide-react";
+import { Banknote, Code, CreditCard, Home } from "lucide-react";
 import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
@@ -39,6 +39,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: CreditCard,
         isActive: isActive("/transactions"),
       },
+      {
+        title: "Dev",
+        url: "/dev",
+        icon: Code,
+        isActive: isActive("/dev"),
+      }
     ],
   };
 
