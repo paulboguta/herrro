@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, pgTable } from "drizzle-orm/pg-core";
+import { index, pgTable, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const account_table = pgTable(
   "account",
@@ -15,6 +15,25 @@ export const account_table = pgTable(
   }),
 );
 
+export const category_table = pgTable(
+  "category",
+  (d) => ({
+    id: d.uuid().primaryKey().defaultRandom(),
+    name: d.varchar({ length: 100 }).notNull(),
+    ownerId: d.text().notNull(), // clerk user id
+    isDefault: d.boolean().default(false),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [
+    index("category_owner_idx").on(t.ownerId),
+    uniqueIndex("category_name_owner_unique").on(t.name, t.ownerId),
+  ]
+);
+
 export const transaction_table = pgTable(
   "transaction",
   (d) => ({
@@ -24,7 +43,7 @@ export const transaction_table = pgTable(
     type: d.varchar({ length: 256 }).notNull(),
     amount: d.numeric({ precision: 12, scale: 2 }).notNull(),
     currency: d.varchar({ length: 256 }).notNull().default('USD'),
-    category: d.varchar({ length: 256 }).notNull(),
+    categoryId: d.uuid().references(() => category_table.id),
     description: d.varchar({ length: 256 }),
     account: d.uuid().references(() => account_table.id, { onDelete: "cascade" }),
     createdAt: d
@@ -35,3 +54,5 @@ export const transaction_table = pgTable(
   }),
   (t) => [index("account_idx").on(t.account), index("owner_idx").on(t.ownerId)],
 );
+
+export type Transaction = typeof transaction_table.$inferSelect;
